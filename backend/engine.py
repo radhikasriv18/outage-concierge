@@ -146,7 +146,7 @@ _mix_kinds = list(DAMAGE_MIX)
 _mix_p = np.array(list(DAMAGE_MIX.values()), dtype=float) / sum(DAMAGE_MIX.values())
 _mix_hours = np.array([LABOR["hours_by_asset"][k] for k in _mix_kinds])
 
-DEFAULT_CREWS = 10        # ASSUMPTION: crews assigned to this area (confirm with AEP)
+DEFAULT_CREWS = 2        # ASSUMPTION: crews assigned to this area (confirm with AEP)
 # ASSUMPTION (confirm with AEP): the Excel hours are PERSON-hours and a crew has 3 people.
 # Evidence: half of AEP's real repairs finished the same day, which only fits if a
 # 23-hour pole job (5.2 h x 4.5) is shared by a crew. Set CREW_SIZE = 1 if they're crew-hours.
