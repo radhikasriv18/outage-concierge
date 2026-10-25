@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from 'react-router-dom'
+import { Link, NavLink, Route, Routes } from 'react-router-dom'
 import { USE_MOCK } from './api'
 import MainScreen from './pages/MainScreen'
 import Simulator from './pages/Simulator'
@@ -22,8 +22,11 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 text-gray-800">
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3">
-          <h1 className="flex items-center gap-2 font-semibold text-gray-900">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent-500" /> Outage Concierge
+          <h1>
+            <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900 hover:text-accent-700">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent-500" /> PowerCheck
+              <span className="hidden text-xs font-normal text-gray-400 sm:inline">AI Outage Concierge</span>
+            </Link>
           </h1>
           <nav className="flex gap-1">
             <NavItem to="/">My home</NavItem>

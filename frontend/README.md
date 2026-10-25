@@ -1,4 +1,4 @@
-# Outage Concierge: frontend
+# PowerCheck (AI Outage Concierge): frontend
 
 React + Vite + Tailwind + react-leaflet.
 
