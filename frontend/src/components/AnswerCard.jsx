@@ -203,17 +203,14 @@ export default function AnswerCard({ detail }) {
         </div>
       </div>
 
-      <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 text-gray-700">
-        <p className="font-medium text-gray-900">At a glance</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label>Confirmed</Label>
-            <List items={detail.facts} />
-          </div>
-          <div>
-            <Label>Our estimate</Label>
-            <List items={detail.estimates} />
-          </div>
+      <div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-5 text-gray-700 sm:grid-cols-2">
+        <div>
+          <Label>Confirmed</Label>
+          <List items={detail.facts} />
+        </div>
+        <div>
+          <Label>Our estimate</Label>
+          <List items={detail.estimates} />
         </div>
       </div>
     </div>
