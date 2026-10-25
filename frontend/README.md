@@ -16,7 +16,11 @@ VITE_USE_MOCK=true
 and restart `npm run dev`. All API calls live in `src/api.js`.
 
 ## Pages
-- `/`: customer screen: map, answer card, 4 questions, facts/estimates/actions, neighbor check, chat
-- `/simulator`: wind and crews sliders, staff view + audit log, backtest, privacy/limits panel
+- `/`: street or home-ID search, risk map, answer card ("Will I lose power?" / "How long?"), at a glance, AI chat
+- `/simulator`: wind and crew sliders, scenario summary, backtest, staff view + audit log
 
-Add `?home=043748782` to either URL to preselect a home (useful for demo links).
+Add `?home=606712043` to either URL to preselect a home (useful for demo links).
+
+## Deploy
+Hosted on Vercel (project `powercheck`). From this folder: `npx vercel --prod`.
+`VITE_API_URL` is set in the Vercel project to the Render backend.

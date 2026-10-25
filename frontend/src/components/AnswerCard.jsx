@@ -132,7 +132,7 @@ export default function AnswerCard({ detail }) {
   const [which, setWhich] = useState('power')
   const band = detail.risk?.band
 
-  // Fallback homes come without risk, restoration, or alert (see API.md).
+  // Fallback homes (no power path in AEP's data) come without risk, restoration, or alert.
   if (detail.fallback) {
     return (
       <div className="space-y-3 text-sm">

@@ -4,8 +4,8 @@ messages.py - turns the engine's numbers into the words customers read.
 Templates only (no AI here): every sentence is fixed, so numbers can never be
 invented or changed. The AI chat uses these same sentences as its facts.
 
-build_answer(home_id, gust, crews)  -> everything for the answer card (API.md /homes/{id})
-alert_messages(home_id, gust, crews) -> the 4 alert messages (API.md /messages/{id})
+build_answer(home_id, gust, crews)  -> everything for the answer card (GET /homes/{id})
+alert_messages(home_id, gust, crews) -> the 4 alert messages (GET /messages/{id})
 """
 from datetime import datetime, timedelta
 import json

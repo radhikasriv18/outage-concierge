@@ -62,11 +62,6 @@ export function getRules() {
   return request('/rules')
 }
 
-export function getWeather() {
-  if (USE_MOCK) return Promise.resolve(mock.weather)
-  return request('/weather')
-}
-
 export function getBacktest() {
   if (USE_MOCK) return Promise.resolve(mock.backtest)
   return request('/backtest')

@@ -16,4 +16,7 @@ backend/cache/*
 !backend/cache/weather.json
 !backend/cache/model_report.json
 !backend/cache/backtest.json
-deploy/
+
+# team planning notes (kept locally, not published)
+API.md
+PLAN.md
