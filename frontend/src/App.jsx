@@ -24,7 +24,7 @@ export default function App() {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3">
           <h1>
             <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900 hover:text-accent-700">
-              <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent-500" /> PowerCheck
+              <img src="/favicon.svg" alt="" className="h-6 w-6" /> PowerCheck
               <span className="hidden text-xs font-normal text-gray-400 sm:inline">AI Outage Concierge</span>
             </Link>
           </h1>
