@@ -39,12 +39,6 @@ export function getHome(homeId, params) {
   return request(`/homes/${encodeURIComponent(homeId)}` + query(params))
 }
 
-// Leave `neighborId` empty and the backend picks the closest home on a different line.
-export function getNeighbor(homeId, neighborId, params) {
-  if (USE_MOCK) return Promise.resolve(mockNeighbor(homeId, neighborId))
-  return request('/neighbor' + query({ home: homeId, neighbor: neighborId, wind: params?.wind }))
-}
-
 export function getMessages(homeId, params) {
   if (USE_MOCK) return Promise.resolve(mockMessages(homeId))
   return request(`/messages/${encodeURIComponent(homeId)}` + query(params))
@@ -181,26 +175,6 @@ function mockDetail(homeId, params = {}) {
     power_path: [[home.lat, home.lon], mock.line_taps[home._line], mock.substation],
     fallback: null,
     profile_is_synthetic: true,
-  }
-}
-
-function mockNeighbor(homeId, neighborId) {
-  const a = mock.homes.find((h) => h.home_id === homeId)
-  const b = neighborId
-    ? mock.homes.find((h) => h.home_id === neighborId)
-    : mock.homes.find((h) => h._line !== a?._line)
-  if (!a || !b) throw new Error('We couldn’t find that home in the demo area.')
-  const same = a._line === b._line
-  return {
-    home: a.home_id,
-    neighbor: b.home_id,
-    same_line: same,
-    shared_equipment: same ? 5 : 2,
-    my_probability: mockProbability(a),
-    neighbor_probability: mockProbability(b),
-    explanation: same
-      ? "You and your neighbor get power through exactly the same equipment, so you'll almost always lose and regain power together."
-      : 'You and your neighbor are on different safety switches, and you share the bigger equipment upstream (2 pieces).',
   }
 }
 

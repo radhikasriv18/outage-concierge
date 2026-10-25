@@ -29,7 +29,8 @@ AUDIT_FILE = CACHE / "audit.jsonl"
 app = FastAPI(title="Outage Concierge API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    # any local dev port (Vite moves to 5174, 5175... when 5173 is busy)
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -194,7 +195,19 @@ Safety: never suggest touching or going near fallen lines; tell the customer to 
 and report them to AEP. Never suggest running a generator indoors or in a garage.
 Only mention calling 911 if the customer describes an emergency or danger to someone's
 life or health.
-If the customer writes in another language, answer in that language."""
+If the customer writes in another language, answer in that language.
+"neighbor_comparison" explains why a nearby home on a different branch might keep power
+when this one loses it (or the other way round); use it for questions about neighbors."""
+
+
+def neighbor_facts(home_id, wind):
+    """The neighbor comparison for the chat, without the neighbor's ID (privacy)."""
+    other = engine.nearest_neighbor(home_id)
+    if other is None:
+        return None
+    n = engine.compare_neighbors(home_id, other, wind)
+    return {k: n[k] for k in ["same_line", "shared_equipment", "my_probability",
+                              "neighbor_probability", "explanation"]}
 
 
 @app.post("/chat")
@@ -202,6 +215,7 @@ def chat(req: ChatRequest):
     ans = get_answer(req.home_id, req.wind, req.crews)
     facts = {k: ans.get(k) for k in ["headline", "risk", "restoration", "facts", "estimates",
                                      "actions", "alert", "fallback"]}
+    facts["neighbor_comparison"] = neighbor_facts(req.home_id, req.wind)
     audit(req.home_id, "chat_question", req.question[:200])
 
     summary = " ".join(s.rstrip(".") + "." for s in [ans.get("headline") or ""] + ans.get("estimates", []) if s)

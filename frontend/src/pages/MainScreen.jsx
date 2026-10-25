@@ -2,7 +2,6 @@ import AnswerCard from '../components/AnswerCard'
 import Chat from '../components/Chat'
 import HomeMap from '../components/HomeMap'
 import HomeSearch from '../components/HomeSearch'
-import NeighborCheck from '../components/NeighborCheck'
 import useHomeData from '../useHomeData'
 
 export default function MainScreen() {
@@ -32,7 +31,6 @@ export default function MainScreen() {
         {detail && (
           <>
             <AnswerCard detail={detail} />
-            <NeighborCheck key={`n-${detail.home_id}`} homes={homes} homeId={detail.home_id} />
             <Chat key={`c-${detail.home_id}`} homeId={detail.home_id} />
           </>
         )}

@@ -1,14 +1,21 @@
 import { useState } from 'react'
 import { sendChat } from '../api'
 
+// One tap asks these. They cover what used to be separate sections on the page.
+const SUGGESTIONS = [
+  'What should I do now?',
+  'Will I get alerts?',
+  'Why does my neighbor have power and I don’t?',
+  'Is my generator safe to use?',
+]
+
 export default function Chat({ homeId }) {
   const [messages, setMessages] = useState([])
   const [question, setQuestion] = useState('')
   const [sending, setSending] = useState(false)
 
-  async function ask(e) {
-    e.preventDefault()
-    const q = question.trim()
+  async function ask(text) {
+    const q = text.trim()
     if (!q || sending) return
     setQuestion('')
     setMessages((m) => [...m, { from: 'you', text: q }])
@@ -29,6 +36,18 @@ export default function Chat({ homeId }) {
         <p className="font-medium text-gray-900">Ask a question</p>
         <p className="text-xs text-gray-400">Answers only use the numbers shown above. In an emergency, call 911.</p>
       </div>
+      <div className="flex flex-wrap gap-2">
+        {SUGGESTIONS.map((s) => (
+          <button
+            key={s}
+            onClick={() => ask(s)}
+            disabled={sending}
+            className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:border-accent-200 hover:bg-accent-50 hover:text-accent-700 disabled:opacity-50"
+          >
+            {s}
+          </button>
+        ))}
+      </div>
       {(messages.length > 0 || sending) && (
         <div className="max-h-64 space-y-2 overflow-y-auto">
           {messages.map((m, i) => (
@@ -44,11 +63,17 @@ export default function Chat({ homeId }) {
           {sending && <p className="text-gray-400">Thinking…</p>}
         </div>
       )}
-      <form onSubmit={ask} className="flex gap-2">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          ask(question)
+        }}
+        className="flex gap-2"
+      >
         <input
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Example: Is my generator safe to use?"
+          placeholder="Or type your own question"
           className="min-w-0 flex-1 rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-accent-500"
           aria-label="Your question"
         />
