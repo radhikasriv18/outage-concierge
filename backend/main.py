@@ -131,10 +131,10 @@ def weather():
 
 @app.get("/backtest")
 def backtest():
-    """How the model did on storms it never saw. (Repair-time backtest to be added.)"""
+    """How our predictions compared with what really happened."""
     r = json.loads((CACHE / "model_report.json").read_text())
     chosen = [x for x in r["average"] if x["model"] == r["chosen_model"]][0]
-    return {
+    out = {
         "method": "Leave one storm out: trained on two real storms, tested on the third",
         "chosen_model": r["chosen_model"],
         "average_roc_auc": chosen["roc_auc"],
@@ -143,6 +143,21 @@ def backtest():
         "summary": (f"On storms it had never seen, the equipment our model flagged as riskiest "
                     f"(top 10%) had about {chosen['lift_top10']:.1f} times the average damage."),
     }
+    bt_file = CACHE / "backtest.json"
+    if bt_file.exists():
+        bt = json.loads(bt_file.read_text())
+        out["home_level"] = bt["risk"]
+        out["home_level_note"] = (
+            "Homes share upstream equipment, so one damaged safety switch can affect over a "
+            "thousand homes. In our area each storm had only a handful of independent causes, "
+            "too few to judge home-level accuracy. The equipment-level test above is the "
+            "meaningful one.")
+        out["restoration"] = bt["restoration"]
+        rest = bt["restoration"]
+        out["restoration_summary"] = (
+            f"In the real Feb 2025 storm, {rest['real_done_same_or_next_day']:.0%} of repairs were "
+            f"done the same or next day. We set the default crew count to match that.")
+    return out
 
 
 @app.get("/audit")
@@ -171,6 +186,7 @@ and report them to AEP. Never suggest running a generator indoors or in a garage
 Only mention calling 911 if the customer describes an emergency or danger to someone's
 life or health.
 If the customer writes in another language, answer in that language."""
+
 
 @app.post("/chat")
 def chat(req: ChatRequest):
