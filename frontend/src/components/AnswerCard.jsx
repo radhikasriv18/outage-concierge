@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getRules } from '../api'
 import AlertMessages from './AlertMessages'
 
 const BAND_PILL = {
@@ -14,22 +15,34 @@ const QUESTIONS = [
   { key: 'alert', label: 'Will you alert me?' },
 ]
 
+const SAFETY = 'SAFETY:'
+
 function List({ items }) {
   if (!items?.length) return <p className="text-gray-400">Nothing to show.</p>
   return (
     <ul className="space-y-1.5">
-      {items.map((item) => (
-        <li key={item} className="flex gap-2">
-          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-gray-400" />
-          <span>{item}</span>
-        </li>
-      ))}
+      {items.map((item) =>
+        item.startsWith(SAFETY) ? (
+          <li key={item} className="rounded-md bg-red-50 px-3 py-2 text-red-800">
+            <span className="font-medium">Safety:</span> {item.slice(SAFETY.length).trim()}
+          </li>
+        ) : (
+          <li key={item} className="flex gap-2">
+            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-gray-400" />
+            <span>{item}</span>
+          </li>
+        ),
+      )}
     </ul>
   )
 }
 
 function Label({ children }) {
   return <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-gray-400">{children}</p>
+}
+
+function percent(p) {
+  return typeof p === 'number' ? `about ${Math.round(p * 100)}%` : null
 }
 
 function RepairLine({ position }) {
@@ -52,13 +65,41 @@ function RepairLine({ position }) {
   )
 }
 
-function QuestionAnswer({ which, detail }) {
-  const { risk, restoration, alert } = detail
+function AlertRules() {
+  const [rules, setRules] = useState(null)
+  useEffect(() => {
+    getRules().then(setRules).catch(() => setRules(null))
+  }, [])
+  if (!rules?.alert_rules?.length) return null
+  return (
+    <details className="text-gray-600">
+      <summary className="cursor-pointer text-xs text-gray-500">How we decide who gets alerts</summary>
+      <div className="mt-2">
+        <List items={rules.alert_rules} />
+      </div>
+    </details>
+  )
+}
+
+function QuestionAnswer({ which, detail, params }) {
+  const { risk = {}, restoration = {}, alert = {} } = detail
   if (which === 'power') {
     return (
-      <div>
-        <Label>Why we think this</Label>
-        <List items={risk.reasons} />
+      <div className="space-y-4">
+        <p>
+          Chance of losing power: <span className="font-medium text-gray-900">{percent(risk.probability) ?? risk.band}</span>
+          <span className="text-gray-500"> · {risk.confidence}</span>
+        </p>
+        <div>
+          <Label>Why we think this</Label>
+          <List items={risk.reasons} />
+        </div>
+        {risk.doubts?.length > 0 && (
+          <div>
+            <Label>Why we’re not fully sure</Label>
+            <List items={risk.doubts} />
+          </div>
+        )}
       </div>
     )
   }
@@ -67,55 +108,84 @@ function QuestionAnswer({ which, detail }) {
       <div className="space-y-4">
         <div>
           <Label>Our estimate, not a promise</Label>
-          <p>
-            If your power goes out, it should be back between{' '}
-            <span className="font-medium text-gray-900">{restoration.range_text}</span> ({restoration.min_hours}–
-            {restoration.max_hours} hours).
-          </p>
+          {restoration.range_text ? (
+            <p>
+              If your power goes out, it should be back between{' '}
+              <span className="font-medium text-gray-900">{restoration.range_text}</span>
+              {restoration.min_hours != null && (
+                <span className="text-gray-500">
+                  {' '}
+                  ({Math.round(restoration.min_hours)}–{Math.round(restoration.max_hours)} hours)
+                </span>
+              )}
+              .
+            </p>
+          ) : (
+            <p>We can’t give a reliable restoration time for your home in this scenario.</p>
+          )}
         </div>
         <RepairLine position={restoration.queue_position} />
-        <div>
-          <Label>What could change this</Label>
-          <List items={restoration.what_changes_it} />
-        </div>
+        {restoration.what_changes_it?.length > 0 && (
+          <div>
+            <Label>What could change this</Label>
+            <List items={restoration.what_changes_it} />
+          </div>
+        )}
       </div>
     )
   }
   if (which === 'todo') {
-    return (
-      <div className="space-y-3">
-        <p className="rounded-md bg-red-50 px-3 py-2 text-red-800">
-          <span className="font-medium">Safety:</span> stay away from fallen wires. Call 911 if someone is in danger.
-        </p>
-        <List items={detail.actions} />
-      </div>
-    )
+    return <List items={detail.actions} />
   }
   return (
     <div className="space-y-3">
       <p className="text-gray-900">
         {alert.eligible ? 'Yes, we will send you alerts.' : 'Not right now. We will alert you if your risk goes up.'}
       </p>
+      {alert.eligible && (alert.channel || alert.timing) && (
+        <p>
+          <span className="text-gray-500">How:</span> {alert.channel}
+          {alert.timing && (
+            <>
+              {' '}
+              · <span className="text-gray-500">When:</span> {alert.timing}
+            </>
+          )}
+        </p>
+      )}
       <p className="text-gray-500">Reason: {alert.reason}</p>
-      {alert.escalate && <p>A team member will also check on this home.</p>}
-      <AlertMessages key={detail.home_id} homeId={detail.home_id} />
+      {alert.escalate && <p>A person at AEP will also check on this home.</p>}
+      <AlertRules />
+      <AlertMessages key={detail.home_id} homeId={detail.home_id} params={params} />
     </div>
   )
 }
 
-export default function AnswerCard({ detail }) {
+export default function AnswerCard({ detail, params }) {
   const [which, setWhich] = useState('power')
   const band = detail.risk?.band
 
-  return (
-    <div className="space-y-3 text-sm">
-      {detail.fallback && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
-          <p className="font-medium">We are not sure about this one.</p>
+  // The backend sends only { home_id, fallback, actions } when it can't predict a home.
+  if (detail.fallback) {
+    return (
+      <div className="space-y-3 text-sm">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-800">
+          <p className="text-xs text-amber-600">Home {detail.home_id}</p>
+          <p className="mt-1 font-medium">We are not sure about this one.</p>
           <p>{detail.fallback}</p>
         </div>
-      )}
+        {detail.actions?.length > 0 && (
+          <div className="rounded-xl border border-gray-200 bg-white p-5 text-gray-700">
+            <Label>What you can still do</Label>
+            <List items={detail.actions} />
+          </div>
+        )}
+      </div>
+    )
+  }
 
+  return (
+    <div className="space-y-3 text-sm">
       <div className="rounded-xl border border-gray-200 bg-white p-5">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs text-gray-400">Home {detail.home_id}</p>
@@ -143,7 +213,7 @@ export default function AnswerCard({ detail }) {
           ))}
         </div>
         <div className="p-5 text-gray-700">
-          <QuestionAnswer which={which} detail={detail} />
+          <QuestionAnswer which={which} detail={detail} params={params} />
         </div>
       </div>
 
@@ -159,6 +229,11 @@ export default function AnswerCard({ detail }) {
             <List items={detail.estimates} />
           </div>
         </div>
+        {detail.profile_is_synthetic && (
+          <p className="mt-4 text-xs text-gray-400">
+            Household details (like a sump pump or medical device) are sample data for this demo.
+          </p>
+        )}
       </div>
     </div>
   )
