@@ -1,0 +1,501 @@
+{
+ "_note": "FAKE DATA for building the UI before the backend is ready. Fields starting with _ are mock-only.",
+ "substation": [
+  37.271,
+  -79.9414
+ ],
+ "line_taps": {
+  "A": [
+   37.2795,
+   -79.952
+  ],
+  "B": [
+   37.265,
+   -79.93
+  ],
+  "C": [
+   37.28,
+   -79.928
+  ]
+ },
+ "homes": [
+  {
+   "home_id": "006712043",
+   "lat": 37.2799,
+   "lon": -79.9528,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.72,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "652390956",
+   "lat": 37.2819,
+   "lon": -79.9552,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.8,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "698069869",
+   "lat": 37.2839,
+   "lon": -79.9576,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.88,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "043748782",
+   "lat": 37.2839,
+   "lon": -79.958,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.72,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "789427695",
+   "lat": 37.2859,
+   "lon": -79.9604,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.8,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "835106608",
+   "lat": 37.2859,
+   "lon": -79.9608,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.88,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "080785521",
+   "lat": 37.2879,
+   "lon": -79.9632,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.72,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "926464434",
+   "lat": 37.2899,
+   "lon": -79.9656,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.8,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "972143347",
+   "lat": 37.2899,
+   "lon": -79.966,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.88,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "017822260",
+   "lat": 37.2919,
+   "lon": -79.9684,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.72,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "063501173",
+   "lat": 37.2631,
+   "lon": -79.9277,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.42,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "109180086",
+   "lat": 37.2628,
+   "lon": -79.927,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.5,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "054858999",
+   "lat": 37.2625,
+   "lon": -79.9263,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.58,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "200537912",
+   "lat": 37.2602,
+   "lon": -79.9236,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.42,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "246216825",
+   "lat": 37.2599,
+   "lon": -79.9229,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.5,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "091895738",
+   "lat": 37.2576,
+   "lon": -79.9202,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.58,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "337574651",
+   "lat": 37.2573,
+   "lon": -79.9195,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.42,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "383253564",
+   "lat": 37.257,
+   "lon": -79.9188,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.5,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "028932477",
+   "lat": 37.2547,
+   "lon": -79.9161,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.58,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "474611390",
+   "lat": 37.2544,
+   "lon": -79.9154,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.42,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "520290303",
+   "lat": 37.2805,
+   "lon": -79.9262,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.12,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "065969216",
+   "lat": 37.2826,
+   "lon": -79.926,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.2,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "611648129",
+   "lat": 37.2847,
+   "lon": -79.9258,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.28,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "657327042",
+   "lat": 37.2848,
+   "lon": -79.9236,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.12,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "003005955",
+   "lat": 37.2869,
+   "lon": -79.9234,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.2,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "748684868",
+   "lat": 37.287,
+   "lon": -79.9212,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.28,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "794363781",
+   "lat": 37.2891,
+   "lon": -79.921,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.12,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "040042694",
+   "lat": 37.2912,
+   "lon": -79.9208,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.2,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "885721607",
+   "lat": 37.2913,
+   "lon": -79.9186,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.28,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "931400520",
+   "lat": 37.2934,
+   "lon": -79.9184,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.12,
+   "_repair_hours": 4
+  }
+ ],
+ "rules": {
+  "alert_rules": [
+   "High risk: text 12 hours before the storm",
+   "Medium risk + medical device, life support or elderly resident: text 12 hours before",
+   "Medium risk, everyone else: text 6 hours before",
+   "Life support: phone call + text 24 hours before",
+   "Low risk: no alert (avoids alert fatigue)"
+  ],
+  "escalation_rules": [
+   "Life support + Medium or High risk: add to AEP's welfare-check list before the storm",
+   "Medical device or elderly resident + outage could last over 24 hours: call to check on them",
+   "High risk but 'Not sure': a person at AEP reviews the prediction",
+   "Restoration estimate slips by more than 4 hours: notify a supervisor"
+  ],
+  "risk_bands": {
+   "High": "30% or more",
+   "Medium": "10%-30%",
+   "Low": "under 10%"
+  }
+ },
+ "weather": {
+  "storm": "Feb 2025, Roanoke VA",
+  "source": "Open-Meteo historical archive",
+  "max_gust_mph": 55.3,
+  "max_gust_time": "2025-02-16T15:00",
+  "max_wind_mph": 24,
+  "total_rain_in": 2.73,
+  "average_gust_across_area_mph": 55.8,
+  "slider_default_mph": 55.8
+ },
+ "backtest": {
+  "method": "Leave one storm out: trained on two real storms, tested on the third",
+  "chosen_model": "logistic_regression",
+  "average_roc_auc": 0.619,
+  "average_top10_lift": 1.897,
+  "per_storm": [
+   {
+    "model": "logistic_regression",
+    "test_storm": "feb2025",
+    "damaged_share": 0.042,
+    "roc_auc": 0.638,
+    "avg_precision": 0.068,
+    "brier": 0.0412,
+    "lift_top10": 1.89
+   },
+   {
+    "model": "logistic_regression",
+    "test_storm": "sep2024",
+    "damaged_share": 0.0069,
+    "roc_auc": 0.577,
+    "avg_precision": 0.009,
+    "brier": 0.0073,
+    "lift_top10": 1.42
+   },
+   {
+    "model": "logistic_regression",
+    "test_storm": "jan2025",
+    "damaged_share": 0.0025,
+    "roc_auc": 0.642,
+    "avg_precision": 0.02,
+    "brier": 0.0025,
+    "lift_top10": 2.38
+   }
+  ],
+  "summary": "On storms it had never seen, the equipment our model flagged as riskiest (top 10%) had about 1.9 times the average damage.",
+  "home_level": [
+   {
+    "test_storm": "feb2025",
+    "homes": 5190,
+    "average_predicted": 0.066,
+    "actual_share": 0.161,
+    "home_roc_auc": 0.44,
+    "independent_causes": 20,
+    "by_band": [
+     {
+      "band": "Low",
+      "homes": 4653,
+      "predicted": 0.06,
+      "actual": 0.161
+     },
+     {
+      "band": "Medium",
+      "homes": 537,
+      "predicted": 0.121,
+      "actual": 0.164
+     }
+    ]
+   },
+   {
+    "test_storm": "sep2024",
+    "homes": 5190,
+    "average_predicted": 0.139,
+    "actual_share": 0.276,
+    "home_roc_auc": 0.26,
+    "independent_causes": 7,
+    "by_band": [
+     {
+      "band": "Low",
+      "homes": 1647,
+      "predicted": 0.071,
+      "actual": 0.491
+     },
+     {
+      "band": "Medium",
+      "homes": 3542,
+      "predicted": 0.171,
+      "actual": 0.176
+     },
+     {
+      "band": "High",
+      "homes": 1,
+      "predicted": 0.3,
+      "actual": 0
+     }
+    ]
+   },
+   {
+    "test_storm": "jan2025",
+    "homes": 5190,
+    "average_predicted": 0.009,
+    "actual_share": 0.086,
+    "home_roc_auc": 0.647,
+    "independent_causes": 6,
+    "by_band": [
+     {
+      "band": "Low",
+      "homes": 5190,
+      "predicted": 0.009,
+      "actual": 0.086
+     }
+    ]
+   }
+  ],
+  "home_level_note": "Homes share upstream equipment, so one damaged safety switch can affect over a thousand homes. In our area each storm had only a handful of independent causes, too few to judge home-level accuracy. The equipment-level test above is the meaningful one.",
+  "restoration": {
+   "storm": "feb2025",
+   "real_repairs": 1209,
+   "real_done_same_or_next_day": 0.717,
+   "current_default_crews": 2,
+   "current_within_48h": 0.801,
+   "calibrated_crews": 2,
+   "calibrated_within_48h": 0.801,
+   "sweep": [
+    {
+     "crews": 1,
+     "within_24h": 0.26,
+     "within_48h": 0.496,
+     "median_hours": 48.6
+    },
+    {
+     "crews": 2,
+     "within_24h": 0.47,
+     "within_48h": 0.801,
+     "median_hours": 25.7
+    },
+    {
+     "crews": 3,
+     "within_24h": 0.634,
+     "within_48h": 0.959,
+     "median_hours": 18.2
+    },
+    {
+     "crews": 4,
+     "within_24h": 0.76,
+     "within_48h": 0.995,
+     "median_hours": 14.4
+    },
+    {
+     "crews": 5,
+     "within_24h": 0.86,
+     "within_48h": 1,
+     "median_hours": 12.1
+    },
+    {
+     "crews": 6,
+     "within_24h": 0.92,
+     "within_48h": 1,
+     "median_hours": 10.6
+    },
+    {
+     "crews": 7,
+     "within_24h": 0.956,
+     "within_48h": 1,
+     "median_hours": 9.5
+    },
+    {
+     "crews": 8,
+     "within_24h": 0.974,
+     "within_48h": 1,
+     "median_hours": 8.7
+    },
+    {
+     "crews": 9,
+     "within_24h": 0.987,
+     "within_48h": 1,
+     "median_hours": 8
+    },
+    {
+     "crews": 10,
+     "within_24h": 0.992,
+     "within_48h": 1,
+     "median_hours": 7.6
+    }
+   ],
+   "note": "AEP's records only have dates, not times, so this is a day-level check. Calibrated crews = the crew count whose simulated repairs best match AEP's real Feb 2025 completion rate in this area."
+  },
+  "restoration_summary": "In the real Feb 2025 storm, 72% of repairs were done the same or next day. We set the default crew count to match that."
+ }
+}

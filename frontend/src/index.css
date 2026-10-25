@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Accent color for buttons and highlights. Change these values to retheme the app. */
+@theme {
+  --color-accent-50: #fdf4f4;
+  --color-accent-100: #fae6e6;
+  --color-accent-200: #f3cfcf;
+  --color-accent-500: #d96b6b;
+  --color-accent-600: #c75959;
+  --color-accent-700: #a84646;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+.leaflet-container {
+  z-index: 0;
+}
