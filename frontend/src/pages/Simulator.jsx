@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { DEFAULT_CREWS, DEFAULT_WIND, getAudit, getBacktest, getRules, getWeather } from '../api'
+import { DEFAULT_CREWS, DEFAULT_WIND, getAudit, getBacktest, getRules } from '../api'
 import AlertMessages from '../components/AlertMessages'
 import { ScenarioSummary } from '../components/AnswerCard'
 import HomeMap from '../components/HomeMap'
@@ -16,7 +16,7 @@ const CREW_STOPS = [1, 2, 3, 5, 8, 10, 15, 20, 30, 50]
 
 // The slider moves freely; the backend is only asked when the user lets go
 // (a new wind/crews combination takes a few seconds to simulate).
-function Slider({ label, stops, value, onCommit, unit, note, describe }) {
+function Slider({ label, stops, value, onCommit, unit }) {
   const [draft, setDraft] = useState(value)
   const commit = () => draft !== value && onCommit(draft)
 
@@ -26,7 +26,6 @@ function Slider({ label, stops, value, onCommit, unit, note, describe }) {
         <span>{label}</span>
         <span>
           {draft} {unit}
-          {describe?.(draft) && <span className="text-gray-400"> · {describe(draft)}</span>}
         </span>
       </span>
       <input
@@ -42,7 +41,6 @@ function Slider({ label, stops, value, onCommit, unit, note, describe }) {
         className="mt-2 w-full accent-accent-500"
         aria-valuetext={`${draft} ${unit}`}
       />
-      {note && <span className="text-xs text-gray-400">{note}</span>}
     </label>
   )
 }
@@ -57,6 +55,7 @@ function Row({ label, children }) {
 }
 
 function StaffView({ detail, params }) {
+  const [textsOpen, setTextsOpen] = useState(false)
   const [audit, setAudit] = useState([])
   const [rules, setRules] = useState(null)
   useEffect(() => {
@@ -122,11 +121,13 @@ function StaffView({ detail, params }) {
         )}
 
         {detail && !detail.fallback && (
-          <details>
+          <details onToggle={(e) => setTextsOpen(e.currentTarget.open)}>
             <summary className="cursor-pointer text-xs text-gray-500">Text messages this customer would get</summary>
-            <div className="mt-2">
-              <AlertMessages key={detail.home_id} homeId={detail.home_id} params={params} />
-            </div>
+            {textsOpen && (
+              <div className="mt-2">
+                <AlertMessages key={detail.home_id} homeId={detail.home_id} params={params} />
+              </div>
+            )}
           </details>
         )}
 
@@ -194,12 +195,6 @@ function Backtest() {
                 )}
               </div>
             )}
-            {result.home_level_note && (
-              <details className="text-xs text-gray-500">
-                <summary className="cursor-pointer">Why we don’t score individual homes</summary>
-                <p className="mt-1">{result.home_level_note}</p>
-              </details>
-            )}
             {result.per_storm?.length > 0 && (
               <table className="w-full text-left text-xs text-gray-600">
                 <thead>
@@ -230,13 +225,6 @@ function Backtest() {
 export default function Simulator() {
   const [wind, setWind] = useState(REAL_WIND)
   const [crews, setCrews] = useState(DEFAULT_CREWS)
-  const [realGust, setRealGust] = useState(null)
-
-  useEffect(() => {
-    getWeather()
-      .then((w) => setRealGust(Math.round(w.slider_default_mph)))
-      .catch(() => setRealGust(null))
-  }, [])
 
   const params = { wind, crews }
   const {
@@ -273,8 +261,6 @@ export default function Simulator() {
           onCommit={setWind}
           stops={WIND_STOPS}
           unit="mph"
-          describe={(v) => (v === REAL_WIND ? 'real Feb 2025 storm' : null)}
-          note={realGust ? `The real Feb 2025 storm averaged about ${realGust} mph.` : null}
         />
         <Slider label="Repair crews available" stops={CREW_STOPS} value={crews} onCommit={setCrews} unit="crews" />
       </div>
