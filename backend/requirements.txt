@@ -1,0 +1,12 @@
+# What the running API needs (used by Render). The prep scripts also need:
+#   geopandas openpyxl  (see PLAN.md for the full setup)
+# scikit-learn must match the version that trained cache/model.joblib.
+fastapi==0.162.0
+uvicorn==0.54.0
+pydantic==2.14.1
+pandas==3.1.0
+numpy==2.5.4
+scikit-learn==1.9.1
+joblib==1.6.0
+requests==2.34.2
+python-dotenv==1.2.4

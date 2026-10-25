@@ -4,5 +4,16 @@ node_modules/
 __pycache__/
 .venv/
 dist/
-backend/cache/
+# backend cache is made by the prep scripts; the files the API reads are committed so a
+# fresh clone (and Render) can run without the pipeline. Rerun prep.py etc. to rebuild them.
+backend/cache/*
+!backend/cache/model.joblib
+!backend/cache/train_feb2025.csv
+!backend/cache/homes.csv
+!backend/cache/chains.json
+!backend/cache/labor.json
+!backend/cache/equipment.json
+!backend/cache/weather.json
+!backend/cache/model_report.json
+!backend/cache/backtest.json
 deploy/

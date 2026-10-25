@@ -1,0 +1,4 @@
+# local-only files: never upload these to Vercel
+.env.local
+node_modules
+dist

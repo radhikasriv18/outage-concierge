@@ -1,0 +1,15 @@
+{
+  "hours_by_asset": {
+    "Pole": 5.23,
+    "primary": 1.79,
+    "secondary": 2.17,
+    "Transformer": 2.14,
+    "Recloser Bank": 1.1,
+    "Switch": 2.77,
+    "Fuse Bank": 0.38,
+    "default": 0.86
+  },
+  "indirect_multiplier": 4.5,
+  "access_adder_hours": 0.5,
+  "note": "Hours = install + removal from AEP's labor Excel. Wire repair is an assumption (the sheet has no wire-pulling hours). Unit (person- vs crew-hours) to confirm with AEP."
+}

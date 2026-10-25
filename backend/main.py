@@ -6,10 +6,12 @@ Run:
 Try it in the browser:
     http://localhost:8000/docs
 """
+from contextlib import asynccontextmanager
 from datetime import datetime
 import json
 import os
 from pathlib import Path
+import threading
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,11 +28,23 @@ import messages
 CACHE = Path(__file__).parent / "cache"
 AUDIT_FILE = CACHE / "audit.jsonl"
 
-app = FastAPI(title="Outage Concierge API")
+@asynccontextmanager
+async def lifespan(app):
+    """Pre-calculate the real Feb 2025 storm in the background, so the first visitors
+    after a (re)start get fast answers. 56 mph is the simulator's starting stop."""
+    def warm():
+        for wind in (engine.REAL_STORM_GUST, round(engine.REAL_STORM_GUST)):
+            for crews in (engine.DEFAULT_CREWS, engine.DEFAULT_CREWS + 5):
+                engine.simulate(wind, crews)
+    threading.Thread(target=warm, daemon=True).start()
+    yield
+
+
+app = FastAPI(title="Outage Concierge API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    # any local dev port (Vite moves to 5174, 5175... when 5173 is busy)
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
+    # any local dev port (Vite moves to 5174, 5175... when 5173 is busy) and the Vercel site
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+|https://[a-z0-9-]+\.vercel\.app",
     allow_methods=["*"],
     allow_headers=["*"],
 )

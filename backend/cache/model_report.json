@@ -1,0 +1,74 @@
+{
+  "method": "leave-one-storm-out",
+  "results": [
+    {
+      "model": "logistic_regression",
+      "test_storm": "feb2025",
+      "damaged_share": 0.042,
+      "roc_auc": 0.638,
+      "avg_precision": 0.068,
+      "brier": 0.0412,
+      "lift_top10": 1.89
+    },
+    {
+      "model": "logistic_regression",
+      "test_storm": "sep2024",
+      "damaged_share": 0.0069,
+      "roc_auc": 0.577,
+      "avg_precision": 0.009,
+      "brier": 0.0073,
+      "lift_top10": 1.42
+    },
+    {
+      "model": "logistic_regression",
+      "test_storm": "jan2025",
+      "damaged_share": 0.0025,
+      "roc_auc": 0.642,
+      "avg_precision": 0.02,
+      "brier": 0.0025,
+      "lift_top10": 2.38
+    },
+    {
+      "model": "gradient_boosting",
+      "test_storm": "feb2025",
+      "damaged_share": 0.042,
+      "roc_auc": 0.633,
+      "avg_precision": 0.06,
+      "brier": 0.0416,
+      "lift_top10": 1.72
+    },
+    {
+      "model": "gradient_boosting",
+      "test_storm": "sep2024",
+      "damaged_share": 0.0069,
+      "roc_auc": 0.547,
+      "avg_precision": 0.008,
+      "brier": 0.0074,
+      "lift_top10": 0.83
+    },
+    {
+      "model": "gradient_boosting",
+      "test_storm": "jan2025",
+      "damaged_share": 0.0025,
+      "roc_auc": 0.589,
+      "avg_precision": 0.003,
+      "brier": 0.0038,
+      "lift_top10": 1.38
+    }
+  ],
+  "average": [
+    {
+      "model": "gradient_boosting",
+      "roc_auc": 0.59,
+      "avg_precision": 0.024,
+      "lift_top10": 1.31
+    },
+    {
+      "model": "logistic_regression",
+      "roc_auc": 0.619,
+      "avg_precision": 0.032,
+      "lift_top10": 1.897
+    }
+  ],
+  "chosen_model": "logistic_regression"
+}

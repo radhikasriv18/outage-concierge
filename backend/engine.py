@@ -8,6 +8,7 @@ Part 4: band, confidence, reasons in plain words
 """
 from pathlib import Path
 import json
+import os
 import threading
 
 import numpy as np
@@ -203,7 +204,7 @@ def _one_storm(p_dev, crews, rng):
 
 
 _sim_cache = {}               # (wind, crews) -> results; ~25 MB each, so only the latest few are kept
-_SIM_CACHE_SIZE = 8
+_SIM_CACHE_SIZE = int(os.environ.get("SIM_CACHE_SIZE", 8))   # lower it on small servers
 _sim_lock = threading.Lock()   # requests that arrive together wait for one simulation, not run their own
 _rows = np.arange(len(_home_ids))
 
