@@ -202,7 +202,8 @@ def _one_storm(p_dev, crews, rng):
     return finish, home_back, queue_pos
 
 
-_sim_cache = {}
+_sim_cache = {}               # (wind, crews) -> results; ~25 MB each, so only the latest few are kept
+_SIM_CACHE_SIZE = 8
 _sim_lock = threading.Lock()   # requests that arrive together wait for one simulation, not run their own
 _rows = np.arange(len(_home_ids))
 
@@ -212,6 +213,7 @@ def simulate(storm_gust_mph=REAL_STORM_GUST, crews=DEFAULT_CREWS):
     key = (round(storm_gust_mph, 1), crews)
     with _sim_lock:
         if key in _sim_cache:
+            _sim_cache[key] = _sim_cache.pop(key)          # mark as most recently used
             return _sim_cache[key]
         probs = device_probabilities(storm_gust_mph)
         p_dev = probs.reindex(_dev_ids).to_numpy()
@@ -231,6 +233,8 @@ def simulate(storm_gust_mph=REAL_STORM_GUST, crews=DEFAULT_CREWS):
                 pos[list(queue_pos)] = list(queue_pos.values())
                 queue[r, out] = pos[last[out]]
         _sim_cache[key] = (back, queue)
+        while len(_sim_cache) > _SIM_CACHE_SIZE:
+            _sim_cache.pop(next(iter(_sim_cache)))         # drop the least recently used
         return back, queue
 
 

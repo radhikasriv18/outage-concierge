@@ -8,13 +8,15 @@ import HomeSearch from '../components/HomeSearch'
 import { placeName } from '../places'
 
 // Backend limits (see backend/main.py): wind 20–100 mph, crews 1–50.
-const WIND_MIN = 20
-const WIND_MAX = 100
-const CREWS_MAX = 50
+// The sliders snap to these stops: neat values, and fewer combinations for the backend to simulate
+// (repeats come back from its cache). Wind has the real Feb 2025 storm as its own stop.
+const REAL_WIND = Math.round(DEFAULT_WIND)
+const WIND_STOPS = Array.from({ length: 17 }, (_, i) => 20 + 5 * i).map((v) => (v === 55 ? REAL_WIND : v))
+const CREW_STOPS = [1, 2, 3, 5, 8, 10, 15, 20, 30, 50]
 
 // The slider moves freely; the backend is only asked when the user lets go
 // (a new wind/crews combination takes a few seconds to simulate).
-function Slider({ label, value, onCommit, min, max, unit, note }) {
+function Slider({ label, stops, value, onCommit, unit, note, describe }) {
   const [draft, setDraft] = useState(value)
   const commit = () => draft !== value && onCommit(draft)
 
@@ -24,18 +26,21 @@ function Slider({ label, value, onCommit, min, max, unit, note }) {
         <span>{label}</span>
         <span>
           {draft} {unit}
+          {describe?.(draft) && <span className="text-gray-400"> · {describe(draft)}</span>}
         </span>
       </span>
       <input
         type="range"
-        min={min}
-        max={max}
-        value={draft}
-        onChange={(e) => setDraft(Number(e.target.value))}
+        min={0}
+        max={stops.length - 1}
+        step={1}
+        value={Math.max(0, stops.indexOf(draft))}
+        onChange={(e) => setDraft(stops[Number(e.target.value)])}
         onPointerUp={commit}
         onKeyUp={commit}
         onBlur={commit}
         className="mt-2 w-full accent-accent-500"
+        aria-valuetext={`${draft} ${unit}`}
       />
       {note && <span className="text-xs text-gray-400">{note}</span>}
     </label>
@@ -223,7 +228,7 @@ function Backtest() {
 }
 
 export default function Simulator() {
-  const [wind, setWind] = useState(Math.round(DEFAULT_WIND))
+  const [wind, setWind] = useState(REAL_WIND)
   const [crews, setCrews] = useState(DEFAULT_CREWS)
   const [realGust, setRealGust] = useState(null)
 
@@ -266,12 +271,12 @@ export default function Simulator() {
           label="Storm wind gusts"
           value={wind}
           onCommit={setWind}
-          min={WIND_MIN}
-          max={WIND_MAX}
+          stops={WIND_STOPS}
           unit="mph"
+          describe={(v) => (v === REAL_WIND ? 'real Feb 2025 storm' : null)}
           note={realGust ? `The real Feb 2025 storm averaged about ${realGust} mph.` : null}
         />
-        <Slider label="Repair crews available" value={crews} onCommit={setCrews} min={1} max={CREWS_MAX} unit="crews" />
+        <Slider label="Repair crews available" stops={CREW_STOPS} value={crews} onCommit={setCrews} unit="crews" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
