@@ -329,6 +329,63 @@ def compare_neighbors(home_id, neighbor_id, storm_gust_mph=REAL_STORM_GUST):
     }
 
 
+# ------------------------------------------------------------------ PART 7: alerts and escalation
+ALERT_RULES = [
+    "High risk: text 12 hours before the storm",
+    "Medium risk + medical device, life support or elderly resident: text 12 hours before",
+    "Medium risk, everyone else: text 6 hours before",
+    "Life support: phone call + text 24 hours before",
+    "Low risk: no alert (avoids alert fatigue)",
+]
+ESCALATION_RULES = [
+    "Life support + Medium or High risk: add to AEP's welfare-check list before the storm",
+    "Medical device or elderly resident + outage could last over 24 hours: call to check on them",
+    "High risk but 'Not sure': a person at AEP reviews the prediction",
+    "Restoration estimate slips by more than 4 hours: notify a supervisor",
+]
+
+
+def alert_plan(home_id, assessment, restore):
+    """Should this home get an alert, how, when, and should a person at AEP be told?"""
+    home = HOMES.loc[home_id]
+    band = assessment.get("band")
+    life = bool(home["life_support"])
+    vulnerable = life or bool(home["medical_device"]) or bool(home["elderly_resident"])
+
+    eligible, channel, timing, reason = False, None, None, "Low risk: no alert needed"
+    if life and band in ("Medium", "High"):
+        eligible, channel, timing = True, "Phone call and text message", "24 hours before the storm"
+        reason = "Life-support customer with elevated risk"
+    elif band == "High":
+        eligible, channel, timing = True, "Text message", "12 hours before the storm"
+        reason = "High risk of losing power"
+    elif band == "Medium" and vulnerable:
+        eligible, channel, timing = True, "Text message", "12 hours before the storm"
+        reason = "Medium risk, and someone at home may need extra time to prepare"
+    elif band == "Medium":
+        eligible, channel, timing = True, "Text message", "6 hours before the storm"
+        reason = "Medium risk of losing power"
+
+    escalate, escalate_reasons = False, []
+    if life and band in ("Medium", "High"):
+        escalate_reasons.append("Add to the welfare-check list before the storm")
+    long_outage = restore.get("max_hours") is not None and restore["max_hours"] > 24
+    if (bool(home["medical_device"]) or bool(home["elderly_resident"])) and long_outage:
+        escalate_reasons.append("Vulnerable household and the outage could last over a day")
+    if band == "High" and assessment.get("confidence") == "Not sure":
+        escalate_reasons.append("High-risk prediction with low confidence: needs a person to review")
+    escalate = bool(escalate_reasons)
+
+    return {"eligible": eligible, "channel": channel, "timing": timing, "reason": reason,
+            "escalate": escalate, "escalate_reasons": escalate_reasons}
+
+
+def estimate_slipped(old_max_hours, new_max_hours):
+    """Escalation rule 4: the estimate got more than 4 hours worse."""
+    return (old_max_hours is not None and new_max_hours is not None
+            and new_max_hours - old_max_hours > 4)
+
+
 if __name__ == "__main__":
     print("Real Feb 2025 storm, average gust:", REAL_STORM_GUST, "mph\n")
     for gust in [30, 45, REAL_STORM_GUST, 70]:
