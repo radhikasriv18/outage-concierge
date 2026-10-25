@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { getNeighbor } from '../api'
+import { placeName } from '../places'
 
 // Offer the closest homes as "neighbors" so nobody has to type an ID.
 function nearestHomes(homes, home, count = 5) {
@@ -46,7 +47,7 @@ export default function NeighborCheck({ homes, homeId, params }) {
           <option value="">Closest neighbor on a different line</option>
           {neighbors.map((n) => (
             <option key={n.home_id} value={n.home_id}>
-              Neighbor {n.home_id}
+              {placeName(n) || 'Neighbor'} · {n.home_id}
             </option>
           ))}
         </select>

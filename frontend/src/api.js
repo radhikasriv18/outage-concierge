@@ -25,9 +25,9 @@ function query(params = {}) {
 export function getHomes(params) {
   if (USE_MOCK) {
     return Promise.resolve(
-      mock.homes.map(({ home_id, lat, lon, ...h }) => {
+      mock.homes.map(({ home_id, lat, lon, street, city, ...h }) => {
         const probability = mockProbability(h, params)
-        return { home_id, lat, lon, risk_band: band(probability), probability }
+        return { home_id, lat, lon, street, city, risk_band: band(probability), probability }
       }),
     )
   }
@@ -116,6 +116,8 @@ function mockDetail(homeId, params = {}) {
   if (homeId === FALLBACK_HOME) {
     return {
       home_id: homeId,
+      street: home.street,
+      city: home.city,
       fallback: "We can't predict this home reliably right now, because we don't have details about the equipment that feeds it.",
       actions: ['SAFETY: Stay far away from fallen power lines and report them to AEP'],
     }
@@ -130,6 +132,8 @@ function mockDetail(homeId, params = {}) {
 
   return {
     home_id: home.home_id,
+    street: home.street,
+    city: home.city,
     headline: {
       High: 'Your power is at high risk of going out during this storm.',
       Medium: 'Your power might go out during this storm.',

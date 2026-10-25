@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet'
+import { placeName } from '../places'
 
 const RISK_COLORS = { Low: '#4ade80', Medium: '#fbbf24', High: '#f87171' }
 // Homes with no power path in AEP's data come back as risk_band 'Unknown'.
@@ -16,7 +17,21 @@ function FitToHomes({ homes }) {
   return null
 }
 
-export default function HomeMap({ homes, selectedId, onSelect, powerPath }) {
+// Moves the map to a searched street or home. `focus` is a new object on every search.
+function FocusOn({ focus }) {
+  const map = useMap()
+  useEffect(() => {
+    if (!focus?.points?.length) return
+    if (focus.points.length === 1) map.flyTo(focus.points[0], 17)
+    else map.flyToBounds(focus.points, { padding: [40, 40], maxZoom: 17 })
+  }, [focus, map])
+  return null
+}
+
+export default function HomeMap({ homes, selectedId, onSelect, powerPath, focus }) {
+  // When a street is searched, its homes stay bright and the rest fade.
+  const streetIds = focus?.ids
+
   return (
     <div className="flex h-full flex-col gap-2">
       <MapContainer center={[37.27, -79.94]} zoom={13} preferCanvas className="min-h-80 flex-1 rounded-xl border border-gray-200">
@@ -25,9 +40,11 @@ export default function HomeMap({ homes, selectedId, onSelect, powerPath }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <FitToHomes homes={homes} />
+        <FocusOn focus={focus} />
         {powerPath?.length > 1 && <Polyline positions={powerPath} pathOptions={{ color: '#60a5fa', weight: 4 }} />}
         {homes.map((h) => {
           const selected = h.home_id === selectedId
+          const faded = streetIds && !streetIds.has(h.home_id) && !selected
           return (
             <CircleMarker
               key={h.home_id}
@@ -36,13 +53,14 @@ export default function HomeMap({ homes, selectedId, onSelect, powerPath }) {
               pathOptions={{
                 color: selected ? '#374151' : '#ffffff',
                 weight: selected ? 3 : 1,
+                opacity: faded ? 0.25 : 1,
                 fillColor: RISK_COLORS[h.risk_band] || UNKNOWN_COLOR,
-                fillOpacity: 0.9,
+                fillOpacity: faded ? 0.25 : 0.9,
               }}
               eventHandlers={{ click: () => onSelect(h.home_id) }}
             >
               <Tooltip>
-                {h.home_id}: {RISK_COLORS[h.risk_band] ? `${h.risk_band} risk` : 'No prediction'}
+                {placeName(h) || `Home ${h.home_id}`}: {RISK_COLORS[h.risk_band] ? `${h.risk_band} risk` : 'No prediction'}
               </Tooltip>
             </CircleMarker>
           )

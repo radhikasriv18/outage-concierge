@@ -41,5 +41,19 @@ export default function useHomeData(params = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId, paramKey])
 
-  return { homes, selectedId, setSelectedId, detail, loading, homesLoading, error }
+  // Where the map should move: a whole street (dots highlighted) or one home.
+  const [focus, setFocus] = useState(null)
+  function selectFromSearch(homeId) {
+    setSelectedId(homeId)
+    const h = homes.find((x) => x.home_id === homeId)
+    if (h) setFocus({ points: [[h.lat, h.lon]] })
+  }
+  function showStreet(streetHomes) {
+    setFocus({ points: streetHomes.map((h) => [h.lat, h.lon]), ids: new Set(streetHomes.map((h) => h.home_id)) })
+  }
+
+  return {
+    homes, selectedId, setSelectedId, detail, loading, homesLoading, error,
+    focus, selectFromSearch, showStreet,
+  }
 }

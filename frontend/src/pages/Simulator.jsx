@@ -3,7 +3,8 @@ import { DEFAULT_CREWS, DEFAULT_WIND, getAudit, getBacktest, getRules, getWeathe
 import AnswerCard from '../components/AnswerCard'
 import HomeMap from '../components/HomeMap'
 import useHomeData from '../useHomeData'
-import { HomeSearch } from './MainScreen'
+import HomeSearch from '../components/HomeSearch'
+import { placeName } from '../places'
 
 // Backend limits (see backend/main.py): wind 20–100 mph, crews 1–50.
 const WIND_MIN = 20
@@ -65,7 +66,10 @@ function StaffView({ detail }) {
       <h2 className="font-medium text-gray-900">Staff view</h2>
       {detail ? (
         <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-gray-700">
-          <Row label="Home">{detail.home_id}</Row>
+          <Row label="Home">
+            {detail.home_id}
+            {placeName(detail) && <span className="text-gray-400"> · {placeName(detail)}</span>}
+          </Row>
           {detail.fallback ? (
             <Row label="Fallback">Yes: {detail.fallback}</Row>
           ) : (
@@ -195,7 +199,7 @@ function Backtest() {
 const HANDLING = [
   {
     title: 'Privacy',
-    text: 'Homes are shown by anonymous IDs only, with no names or addresses. Equipment locations are rounded to about 100 m. The AI assistant only sees our estimate numbers, never personal data.',
+    text: 'Homes are shown by anonymous ID and street name only, never a name or house number. Equipment locations are rounded to about 100 m. The AI assistant only sees our estimate numbers, never personal data.',
   },
   {
     title: 'Safety',
@@ -223,7 +227,8 @@ export default function Simulator() {
   }, [])
 
   const params = { wind, crews }
-  const { homes, selectedId, setSelectedId, detail, loading, homesLoading, error } = useHomeData(params)
+  const { homes, selectedId, setSelectedId, detail, loading, homesLoading, error, focus, selectFromSearch, showStreet } =
+    useHomeData(params)
   const updating = loading || homesLoading
 
   return (
@@ -248,8 +253,14 @@ export default function Simulator() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="flex h-[50vh] flex-col gap-2 lg:h-[70vh]">
-          <HomeSearch homes={homes} onSelect={setSelectedId} />
-          <HomeMap homes={homes} selectedId={selectedId} onSelect={setSelectedId} powerPath={detail?.power_path} />
+          <HomeSearch homes={homes} onSelect={selectFromSearch} onStreet={showStreet} />
+          <HomeMap
+            homes={homes}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            powerPath={detail?.power_path}
+            focus={focus}
+          />
         </section>
         <section className="space-y-4">
           {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
@@ -270,9 +281,11 @@ export default function Simulator() {
         <Backtest />
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-5 text-sm">
-        <h2 className="mb-3 font-medium text-gray-900">How we handle privacy, safety, uncertainty, and limits</h2>
-        <div className="grid gap-3 md:grid-cols-2">
+      <details className="rounded-xl border border-gray-200 bg-white p-5 text-sm">
+        <summary className="cursor-pointer font-medium text-gray-900">
+          How we handle privacy, safety, uncertainty, and limits
+        </summary>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
           {HANDLING.map((h) => (
             <div key={h.title} className="rounded-lg bg-gray-50 p-4 text-gray-600">
               <h3 className="mb-1 font-medium text-gray-900">{h.title}</h3>
@@ -280,7 +293,7 @@ export default function Simulator() {
             </div>
           ))}
         </div>
-      </div>
+      </details>
     </div>
   )
 }

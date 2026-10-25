@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getRules } from '../api'
+import { placeName } from '../places'
 import AlertMessages from './AlertMessages'
 
 const BAND_PILL = {
@@ -34,6 +35,17 @@ function List({ items }) {
         ),
       )}
     </ul>
+  )
+}
+
+// "Your home on Pollard, Vinton · ID 606712043", or just the ID when there's no street.
+function HomeLabel({ detail }) {
+  const place = placeName(detail)
+  if (!place) return <>Home {detail.home_id}</>
+  return (
+    <>
+      Your home on <span className="font-medium">{place}</span> · ID {detail.home_id}
+    </>
   )
 }
 
@@ -171,7 +183,7 @@ export default function AnswerCard({ detail, params }) {
       <div className="space-y-3 text-sm">
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-800">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-amber-600">Home {detail.home_id}</p>
+            <p className="text-xs text-amber-600"><HomeLabel detail={detail} /></p>
             <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-medium text-gray-600">No prediction</span>
           </div>
           <p className="mt-2 text-xl font-semibold text-amber-900">
@@ -201,7 +213,7 @@ export default function AnswerCard({ detail, params }) {
     <div className="space-y-3 text-sm">
       <div className="rounded-xl border border-gray-200 bg-white p-5">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-gray-400">Home {detail.home_id}</p>
+          <p className="text-xs text-gray-400"><HomeLabel detail={detail} /></p>
           {band && (
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${BAND_PILL[band] || 'bg-gray-100'}`}>
               {band} risk · {detail.risk.confidence}
