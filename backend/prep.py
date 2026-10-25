@@ -34,9 +34,10 @@ METERS = "EPSG:32617"        # a map projection in meters (UTM zone 17N, covers 
 # ---------------------------------------------------------------- customers
 def load_customers():
     c = gpd.read_file(DATA / "Data1" / "Customer_Clip.shp")
-    c = c[["premise_nu", "kind_of_se", "critical_c", "circuit_id", "city", "geometry"]]
+    c = c[["premise_nu", "kind_of_se", "critical_c", "circuit_id", "road_name", "city", "geometry"]]
     c = c.rename(columns={
         "premise_nu": "home_id",
+        "road_name": "street",          # street name only (no house number), for street search
         "kind_of_se": "wire_type",      # Overhead / Underground / Unknown
         "critical_c": "life_support",   # "LS Life Support" or "N/A"
     })

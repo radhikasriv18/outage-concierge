@@ -64,14 +64,20 @@ def get_answer(home_id, wind, crews):
     return ans
 
 
+def text_or_none(value):
+    """Street and city for display: street name only, never a house number."""
+    return value.strip() if isinstance(value, str) and value.strip() else None
+
+
 # ------------------------------------------------------------------ endpoints
 @app.get("/homes")
 def homes(wind: float = Wind, crews: int = Crews):
     """Every demo home with its risk band, for the map."""
     a = engine.assess_all(wind)
-    h = engine.HOMES[["lat", "lon"]].reset_index()
+    h = engine.HOMES.reindex(columns=["lat", "lon", "street", "city"]).reset_index()
     out = h.merge(a, on="home_id")
     return [{"home_id": r.home_id, "lat": round(r.lat, 6), "lon": round(r.lon, 6),
+             "street": text_or_none(r.street), "city": text_or_none(r.city),
              "risk_band": r.band,
              "probability": None if r.probability != r.probability else round(r.probability, 3)}
             for r in out.itertuples()]
@@ -81,6 +87,9 @@ def homes(wind: float = Wind, crews: int = Crews):
 def home(home_id: str, wind: float = Wind, crews: int = Crews):
     """Everything for one home's answer card."""
     ans = get_answer(home_id, wind, crews)
+    home_row = engine.HOMES.loc[home_id]
+    ans["street"] = text_or_none(home_row.get("street"))
+    ans["city"] = text_or_none(home_row.get("city"))
     if not ans.get("fallback"):
         audit(home_id, "risk_estimate",
               f"{ans['risk']['band']} ({ans['risk']['probability']:.0%}), "
