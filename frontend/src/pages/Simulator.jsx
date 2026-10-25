@@ -10,31 +10,29 @@ const WIND_MIN = 20
 const WIND_MAX = 100
 const CREWS_MAX = 50
 
-// Wait until the slider stops moving before asking the backend again.
-function useDebounced(value, ms = 300) {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), ms)
-    return () => clearTimeout(t)
-  }, [value, ms])
-  return debounced
-}
+// The slider moves freely; the backend is only asked when the user lets go
+// (a new wind/crews combination takes a few seconds to simulate).
+function Slider({ label, value, onCommit, min, max, unit, note }) {
+  const [draft, setDraft] = useState(value)
+  const commit = () => draft !== value && onCommit(draft)
 
-function Slider({ label, value, onChange, min, max, unit, note }) {
   return (
     <label className="block">
       <span className="flex justify-between text-sm text-gray-700">
         <span>{label}</span>
         <span>
-          {value} {unit}
+          {draft} {unit}
         </span>
       </span>
       <input
         type="range"
         min={min}
         max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        value={draft}
+        onChange={(e) => setDraft(Number(e.target.value))}
+        onPointerUp={commit}
+        onKeyUp={commit}
+        onBlur={commit}
         className="mt-2 w-full accent-accent-500"
       />
       {note && <span className="text-xs text-gray-400">{note}</span>}
@@ -205,24 +203,28 @@ export default function Simulator() {
       .catch(() => setRealGust(null))
   }, [])
 
-  const debouncedWind = useDebounced(wind)
-  const debouncedCrews = useDebounced(crews)
-  const params = { wind: debouncedWind, crews: debouncedCrews }
-  const { homes, selectedId, setSelectedId, detail, error } = useHomeData(params)
+  const params = { wind, crews }
+  const { homes, selectedId, setSelectedId, detail, loading, homesLoading, error } = useHomeData(params)
+  const updating = loading || homesLoading
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-6 rounded-xl border border-gray-200 bg-white p-5 md:grid-cols-2">
+      <div className="relative grid gap-6 rounded-xl border border-gray-200 bg-white p-5 md:grid-cols-2">
+        {updating && (
+          <span className="absolute right-3 -top-2.5 rounded-full bg-accent-50 px-2.5 py-0.5 text-xs text-accent-700">
+            Updating… (a new storm takes a few seconds)
+          </span>
+        )}
         <Slider
           label="Storm wind gusts"
           value={wind}
-          onChange={setWind}
+          onCommit={setWind}
           min={WIND_MIN}
           max={WIND_MAX}
           unit="mph"
           note={realGust ? `The real Feb 2025 storm averaged about ${realGust} mph.` : null}
         />
-        <Slider label="Repair crews available" value={crews} onChange={setCrews} min={1} max={CREWS_MAX} unit="crews" />
+        <Slider label="Repair crews available" value={crews} onCommit={setCrews} min={1} max={CREWS_MAX} unit="crews" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -233,7 +235,9 @@ export default function Simulator() {
         <section className="space-y-4">
           {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
           {detail ? (
-            <AnswerCard detail={detail} params={params} />
+            <div className={updating ? 'opacity-50 transition-opacity' : 'transition-opacity'}>
+              <AnswerCard detail={detail} params={params} />
+            </div>
           ) : (
             <p className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
               Pick a home, then move the sliders to see the answer change.

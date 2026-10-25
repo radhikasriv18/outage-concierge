@@ -8,15 +8,18 @@ export default function useHomeData(params = {}) {
   // ?home=043748782 in the URL preselects a home (handy for demo links).
   const [selectedId, setSelectedId] = useState(() => new URLSearchParams(window.location.search).get('home'))
   const [detail, setDetail] = useState(null)
+  const [homesLoading, setHomesLoading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const paramKey = JSON.stringify(params)
 
   useEffect(() => {
     let ignore = false
+    setHomesLoading(true)
     getHomes(params)
       .then((data) => !ignore && setHomes(data))
       .catch((e) => !ignore && setError(`Could not load homes: ${e.message}`))
+      .finally(() => !ignore && setHomesLoading(false))
     return () => {
       ignore = true
     }
@@ -38,5 +41,5 @@ export default function useHomeData(params = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId, paramKey])
 
-  return { homes, selectedId, setSelectedId, detail, loading, error }
+  return { homes, selectedId, setSelectedId, detail, loading, homesLoading, error }
 }
