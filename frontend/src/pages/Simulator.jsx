@@ -147,6 +147,25 @@ function Backtest() {
           )}
           <p className="text-gray-700">{result.summary}</p>
           {result.method && <p className="text-xs text-gray-400">{result.method}</p>}
+          {result.restoration_summary && (
+            <div className="border-t border-gray-100 pt-3">
+              <p className="font-medium text-gray-900">Repair times</p>
+              <p className="text-gray-700">{result.restoration_summary}</p>
+              {typeof result.restoration?.calibrated_within_48h === 'number' && (
+                <p className="text-xs text-gray-400">
+                  With {result.restoration.calibrated_crews} crews, our simulation finishes{' '}
+                  {Math.round(result.restoration.calibrated_within_48h * 100)}% of repairs within 48 hours.{' '}
+                  {result.restoration.note}
+                </p>
+              )}
+            </div>
+          )}
+          {result.home_level_note && (
+            <details className="text-xs text-gray-500">
+              <summary className="cursor-pointer">Why we don’t score individual homes</summary>
+              <p className="mt-1">{result.home_level_note}</p>
+            </details>
+          )}
           {result.per_storm?.length > 0 && (
             <table className="w-full text-left text-xs text-gray-600">
               <thead>

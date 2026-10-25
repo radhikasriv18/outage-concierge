@@ -92,7 +92,7 @@ export function getAudit() {
 // ---------- mock helpers (shapes copied from the real backend) ----------
 
 export const DEFAULT_WIND = mock.weather.slider_default_mph
-export const DEFAULT_CREWS = 10
+export const DEFAULT_CREWS = 2 // matches backend engine.DEFAULT_CREWS (calibrated to AEP's real repair records)
 const FALLBACK_HOME = '337574651'
 
 function mockProbability(home, params = {}) {
