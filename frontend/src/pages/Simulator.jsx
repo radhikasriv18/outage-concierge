@@ -1,11 +1,26 @@
 import { useEffect, useState } from 'react'
-import { getAudit, getBacktest } from '../api'
+import { DEFAULT_CREWS, DEFAULT_WIND, getAudit, getBacktest, getRules, getWeather } from '../api'
 import AnswerCard from '../components/AnswerCard'
 import HomeMap from '../components/HomeMap'
 import useHomeData from '../useHomeData'
 import { HomeSearch } from './MainScreen'
 
-function Slider({ label, value, onChange, min, max, unit }) {
+// Backend limits (see backend/main.py): wind 20–100 mph, crews 1–50.
+const WIND_MIN = 20
+const WIND_MAX = 100
+const CREWS_MAX = 50
+
+// Wait until the slider stops moving before asking the backend again.
+function useDebounced(value, ms = 300) {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), ms)
+    return () => clearTimeout(t)
+  }, [value, ms])
+  return debounced
+}
+
+function Slider({ label, value, onChange, min, max, unit, note }) {
   return (
     <label className="block">
       <span className="flex justify-between text-sm text-gray-700">
@@ -22,45 +37,73 @@ function Slider({ label, value, onChange, min, max, unit }) {
         onChange={(e) => onChange(Number(e.target.value))}
         className="mt-2 w-full accent-accent-500"
       />
+      {note && <span className="text-xs text-gray-400">{note}</span>}
     </label>
+  )
+}
+
+function Row({ label, children }) {
+  return (
+    <>
+      <dt className="text-gray-400">{label}</dt>
+      <dd>{children}</dd>
+    </>
   )
 }
 
 function StaffView({ detail }) {
   const [audit, setAudit] = useState([])
+  const [rules, setRules] = useState(null)
   useEffect(() => {
     getAudit().then(setAudit).catch(() => setAudit([]))
   }, [detail])
+  useEffect(() => {
+    getRules().then(setRules).catch(() => setRules(null))
+  }, [])
 
+  const r = detail?.restoration
   return (
     <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-5 text-sm">
       <h2 className="font-medium text-gray-900">Staff view</h2>
       {detail ? (
         <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-gray-700">
-          <dt className="text-gray-400">Home</dt>
-          <dd>{detail.home_id}</dd>
-          <dt className="text-gray-400">Risk / confidence</dt>
-          <dd>
-            {detail.risk?.band} / {detail.risk?.confidence}
-          </dd>
-          <dt className="text-gray-400">Restore hours</dt>
-          <dd>
-            {detail.restoration?.min_hours}–{detail.restoration?.max_hours}
-          </dd>
-          <dt className="text-gray-400">Repair line position</dt>
-          <dd>#{detail.restoration?.queue_position}</dd>
-          <dt className="text-gray-400">Alert / escalate</dt>
-          <dd>
-            {detail.alert?.eligible ? 'Yes' : 'No'} / {detail.alert?.escalate ? 'Yes' : 'No'}
-          </dd>
-          <dt className="text-gray-400">Fallback</dt>
-          <dd>{detail.fallback ? 'Yes' : 'No'}</dd>
+          <Row label="Home">{detail.home_id}</Row>
+          {detail.fallback ? (
+            <Row label="Fallback">Yes: {detail.fallback}</Row>
+          ) : (
+            <>
+              <Row label="Risk / probability">
+                {detail.risk?.band} / {typeof detail.risk?.probability === 'number' ? detail.risk.probability.toFixed(3) : '—'}
+              </Row>
+              <Row label="Confidence">{detail.risk?.confidence}</Row>
+              <Row label="Restore hours">{r?.min_hours != null ? `${r.min_hours}–${r.max_hours}` : '—'}</Row>
+              <Row label="Repair line position">{r?.queue_position ? `#${r.queue_position}` : '—'}</Row>
+              <Row label="Alert">
+                {detail.alert?.eligible ? `Yes · ${detail.alert.channel} · ${detail.alert.timing}` : 'No'}
+              </Row>
+              <Row label="Escalate">
+                {detail.alert?.escalate ? detail.alert.escalate_reasons?.join('; ') || 'Yes' : 'No'}
+              </Row>
+            </>
+          )}
         </dl>
       ) : (
-        <p className="text-sm text-gray-600">Pick a home to see its details.</p>
+        <p className="text-gray-500">Pick a home to see its details.</p>
       )}
+
+      {rules?.escalation_rules?.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-xs text-gray-500">Escalation rules</summary>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-gray-600">
+            {rules.escalation_rules.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
+        </details>
+      )}
+
       <h3 className="pt-2 text-xs font-medium uppercase tracking-wide text-gray-400">Audit log</h3>
-      <div className="overflow-x-auto">
+      <div className="max-h-64 overflow-auto">
         <table className="w-full text-left text-xs text-gray-600">
           <thead>
             <tr className="border-b border-gray-100 text-gray-400">
@@ -73,7 +116,7 @@ function StaffView({ detail }) {
           <tbody>
             {audit.map((row, i) => (
               <tr key={i} className="border-b border-gray-100 align-top">
-                <td className="py-1 pr-2 whitespace-nowrap">{new Date(row.time).toLocaleString()}</td>
+                <td className="py-1 pr-2 whitespace-nowrap">{new Date(row.time).toLocaleTimeString()}</td>
                 <td className="pr-2">{row.home_id}</td>
                 <td className="pr-2">{row.action}</td>
                 <td>{row.detail}</td>
@@ -86,6 +129,8 @@ function StaffView({ detail }) {
   )
 }
 
+const STORM_NAMES = { feb2025: 'Feb 2025', sep2024: 'Sep 2024', jan2025: 'Jan 2025' }
+
 function Backtest() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -94,16 +139,36 @@ function Backtest() {
   }, [])
 
   return (
-    <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-5 text-sm">
-      <h2 className="font-medium text-gray-900">Tested on a real storm</h2>
+    <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-5 text-sm">
+      <h2 className="font-medium text-gray-900">Tested on real storms</h2>
       {error && <p className="text-red-600">Could not load backtest: {error}</p>}
       {result && (
         <>
-          <p>
-            Storm: <b>{result.storm}</b> · {result.damage_records} damage records
-          </p>
-          <p className="text-3xl font-semibold text-accent-600">{result.within_range_pct}%</p>
-          <p>{result.summary}</p>
+          {typeof result.average_top10_lift === 'number' && (
+            <p className="text-3xl font-semibold text-accent-600">{result.average_top10_lift.toFixed(1)}×</p>
+          )}
+          <p className="text-gray-700">{result.summary}</p>
+          {result.method && <p className="text-xs text-gray-400">{result.method}</p>}
+          {result.per_storm?.length > 0 && (
+            <table className="w-full text-left text-xs text-gray-600">
+              <thead>
+                <tr className="border-b border-gray-100 text-gray-400">
+                  <th className="py-1 pr-2 font-medium">Storm it never saw</th>
+                  <th className="py-1 pr-2 font-medium">Top-10% lift</th>
+                  <th className="py-1 font-medium">ROC AUC</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.per_storm.map((s) => (
+                  <tr key={s.test_storm} className="border-b border-gray-100">
+                    <td className="py-1 pr-2">{STORM_NAMES[s.test_storm] || s.test_storm}</td>
+                    <td className="pr-2">{s.lift_top10}×</td>
+                    <td>{s.roc_auc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </>
       )}
     </div>
@@ -113,7 +178,7 @@ function Backtest() {
 const HANDLING = [
   {
     title: 'Privacy',
-    text: 'Homes are shown by anonymous IDs only, with no names or addresses. Life-support homes are not marked on the map. The AI assistant only sees our estimate numbers, never personal data.',
+    text: 'Homes are shown by anonymous IDs only, with no names or addresses. Equipment locations are rounded to about 100 m. The AI assistant only sees our estimate numbers, never personal data.',
   },
   {
     title: 'Safety',
@@ -121,24 +186,43 @@ const HANDLING = [
   },
   {
     title: 'Uncertainty',
-    text: 'We give a time range, not an exact time, and say how sure we are. Estimates are kept separate from confirmed facts. When we lack data, we say so.',
+    text: 'We give a chance and a time range, not exact promises, and say how sure we are and why. Estimates are kept separate from confirmed facts. When we lack data, we say so.',
   },
   {
     title: 'Limits',
-    text: 'The data has no weather, so storm strength is a scenario input. Household details are synthetic and labeled. Repair records have dates only, not hours.',
+    text: 'Weather comes from a public archive on a ~10 km grid. Household details are sample data and labeled. Repair records have dates only, not hours. Crew numbers are assumptions.',
   },
 ]
 
 export default function Simulator() {
-  const [wind, setWind] = useState(45)
-  const [crews, setCrews] = useState(5)
-  const { homes, selectedId, setSelectedId, detail, error } = useHomeData({ wind, crews })
+  const [wind, setWind] = useState(Math.round(DEFAULT_WIND))
+  const [crews, setCrews] = useState(DEFAULT_CREWS)
+  const [realGust, setRealGust] = useState(null)
+
+  useEffect(() => {
+    getWeather()
+      .then((w) => setRealGust(Math.round(w.slider_default_mph)))
+      .catch(() => setRealGust(null))
+  }, [])
+
+  const debouncedWind = useDebounced(wind)
+  const debouncedCrews = useDebounced(crews)
+  const params = { wind: debouncedWind, crews: debouncedCrews }
+  const { homes, selectedId, setSelectedId, detail, error } = useHomeData(params)
 
   return (
     <div className="space-y-4">
       <div className="grid gap-6 rounded-xl border border-gray-200 bg-white p-5 md:grid-cols-2">
-        <Slider label="Storm wind speed" value={wind} onChange={setWind} min={0} max={90} unit="mph" />
-        <Slider label="Repair crews available" value={crews} onChange={setCrews} min={1} max={20} unit="crews" />
+        <Slider
+          label="Storm wind gusts"
+          value={wind}
+          onChange={setWind}
+          min={WIND_MIN}
+          max={WIND_MAX}
+          unit="mph"
+          note={realGust ? `The real Feb 2025 storm averaged about ${realGust} mph.` : null}
+        />
+        <Slider label="Repair crews available" value={crews} onChange={setCrews} min={1} max={CREWS_MAX} unit="crews" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -149,7 +233,7 @@ export default function Simulator() {
         <section className="space-y-4">
           {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
           {detail ? (
-            <AnswerCard detail={detail} />
+            <AnswerCard detail={detail} params={params} />
           ) : (
             <p className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
               Pick a home, then move the sliders to see the answer change.

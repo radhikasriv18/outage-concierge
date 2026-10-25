@@ -8,19 +8,21 @@ const TYPE_LABELS = {
   restored: 'Power back on',
 }
 
-export default function AlertMessages({ homeId }) {
+export default function AlertMessages({ homeId, params }) {
+  const paramKey = JSON.stringify(params ?? {})
   const [messages, setMessages] = useState([])
   const [error, setError] = useState(null)
 
   useEffect(() => {
     let ignore = false
-    getMessages(homeId)
+    getMessages(homeId, params)
       .then((data) => !ignore && setMessages(data))
       .catch((e) => !ignore && setError(e.message))
     return () => {
       ignore = true
     }
-  }, [homeId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [homeId, paramKey])
 
   if (error) return <p className="text-red-600">Could not load messages: {error}</p>
 

@@ -11,9 +11,14 @@ function nearestHomes(homes, home, count = 5) {
     .slice(0, count)
 }
 
-export default function NeighborCheck({ homes, homeId }) {
+function pct(p) {
+  return typeof p === 'number' ? `${Math.round(p * 100)}%` : '?'
+}
+
+export default function NeighborCheck({ homes, homeId, params }) {
   const home = homes.find((h) => h.home_id === homeId)
   const neighbors = useMemo(() => nearestHomes(homes, home), [homes, home])
+  // '' means "let the backend pick the closest home on a different line".
   const [neighborId, setNeighborId] = useState('')
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -22,7 +27,7 @@ export default function NeighborCheck({ homes, homeId }) {
     setError(null)
     setResult(null)
     try {
-      setResult(await getNeighbor(homeId, neighborId || neighbors[0]?.home_id))
+      setResult(await getNeighbor(homeId, neighborId, params))
     } catch (e) {
       setError(e.message)
     }
@@ -35,9 +40,10 @@ export default function NeighborCheck({ homes, homeId }) {
         <select
           value={neighborId}
           onChange={(e) => setNeighborId(e.target.value)}
-          className="rounded-lg border border-gray-200 bg-white px-2 py-2"
+          className="min-w-0 rounded-lg border border-gray-200 bg-white px-2 py-2"
           aria-label="Pick a neighbor"
         >
+          <option value="">Closest neighbor on a different line</option>
           {neighbors.map((n) => (
             <option key={n.home_id} value={n.home_id}>
               Neighbor {n.home_id}
@@ -51,7 +57,16 @@ export default function NeighborCheck({ homes, homeId }) {
           Compare
         </button>
       </div>
-      {result && <p className="rounded-lg bg-gray-50 px-3 py-2 text-gray-700">{result.explanation}</p>}
+      {result && (
+        <div className="space-y-2 rounded-lg bg-gray-50 px-3 py-3 text-gray-700">
+          <p>{result.explanation}</p>
+          {result.neighbor && (
+            <p className="text-xs text-gray-500">
+              Your chance: {pct(result.my_probability)} · Neighbor {result.neighbor}: {pct(result.neighbor_probability)}
+            </p>
+          )}
+        </div>
+      )}
       {error && <p className="text-red-600">Could not compare: {error}</p>}
     </div>
   )
