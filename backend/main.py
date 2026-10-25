@@ -15,9 +15,10 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+import requests
 from dotenv import load_dotenv
 
-load_dotenv()            # reads ANTHROPIC_API_KEY from backend/.env (never commit that file)
+load_dotenv()            # reads GEMINI_API_KEY from backend/.env (never commit that file)
 
 import engine
 import messages
@@ -163,11 +164,13 @@ class ChatRequest(BaseModel):
 CHAT_RULES = """You are AEP's storm outage assistant, talking to a residential customer.
 Answer in plain, calm, simple English (short sentences, no jargon), in 2-5 sentences.
 Use ONLY the facts below about this customer's home. Never invent or change numbers,
-times, or chances. If the answer isn't in the facts, say you don't know and suggest
-calling AEP. Always put safety first: never suggest touching or going near fallen lines,
-and never suggest running a generator indoors. If someone's life or health is in danger,
-tell them to call 911. If the customer writes in another language, answer in that language."""
-
+times, or chances, even if the customer asks you to. If the answer isn't in the facts,
+say you don't know and suggest calling AEP.
+Safety: never suggest touching or going near fallen lines; tell the customer to stay away
+and report them to AEP. Never suggest running a generator indoors or in a garage.
+Only mention calling 911 if the customer describes an emergency or danger to someone's
+life or health.
+If the customer writes in another language, answer in that language."""
 
 @app.post("/chat")
 def chat(req: ChatRequest):
@@ -176,16 +179,34 @@ def chat(req: ChatRequest):
                                      "actions", "alert", "fallback"]}
     audit(req.home_id, "chat_question", req.question[:200])
 
-    key = os.environ.get("ANTHROPIC_API_KEY")
+    summary = " ".join(s.rstrip(".") + "." for s in [ans.get("headline") or ""] + ans.get("estimates", []) if s)
+    fallback_answer = {"answer": "The chat assistant isn't available right now. Here's what we know: " + summary}
+
+    key = os.environ.get("GEMINI_API_KEY")
     if not key:
-        summary = " ".join(s.rstrip(".") + "." for s in [ans.get("headline") or ""] + ans.get("estimates", []) if s)
-        return {"answer": "The chat assistant isn't connected right now. Here's what we know: " + summary}
-    import anthropic
-    client = anthropic.Anthropic(api_key=key)
-    msg = client.messages.create(
-        model=os.environ.get("CHAT_MODEL", "claude-haiku-5-5"),
-        max_tokens=400,
-        system=CHAT_RULES + "\n\nFACTS ABOUT THIS HOME (JSON):\n" + json.dumps(facts),
-        messages=[{"role": "user", "content": req.question}],
-    )
-    return {"answer": msg.content[0].text}
+        return fallback_answer
+    model = os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest")   # fast "lite" model
+    try:
+        r = requests.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+            headers={"x-goog-api-key": key},          # key in a header, never in the URL
+            json={
+                "system_instruction": {"parts": [{"text": CHAT_RULES + "\n\nFACTS ABOUT THIS HOME (JSON):\n"
+                                                  + json.dumps(facts)}]},
+                "contents": [{"role": "user", "parts": [{"text": req.question}]}],
+                "generationConfig": {"maxOutputTokens": 400, "temperature": 0.2},
+            },
+            timeout=30,
+        )
+        r.raise_for_status()
+        # newer models can split an answer into parts; join them and skip "thinking" parts
+        parts = r.json()["candidates"][0]["content"]["parts"]
+        text = " ".join(p["text"].strip() for p in parts if p.get("text") and not p.get("thought"))
+        if not text:
+            raise ValueError("Gemini returned an empty answer")
+        return {"answer": text}
+    except Exception as e:
+        # never crash the demo: log the problem and fall back to the template answer
+        print("Gemini chat failed:", str(e)[:300])
+        audit(req.home_id, "chat_fallback", type(e).__name__)
+        return fallback_answer
