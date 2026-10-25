@@ -32,10 +32,9 @@ export default function Chat({ homeId }) {
 
   return (
     <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-5 text-sm">
-      <div>
-        <p className="font-medium text-gray-900">Ask a question</p>
-        <p className="text-xs text-gray-400">Answers only use the numbers shown above. In an emergency, call 911.</p>
-      </div>
+      <p className="font-medium text-gray-900">
+        Ask a question <span className="text-xs font-normal text-gray-400">(In an emergency, call 911)</span>
+      </p>
       <div className="flex flex-wrap gap-2">
         {SUGGESTIONS.map((s) => (
           <button

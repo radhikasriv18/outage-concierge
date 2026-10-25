@@ -38,10 +38,10 @@ function List({ items }) {
 // "Your home on Pollard, Vinton · ID 606712043", or just the ID when there's no street.
 function HomeLabel({ detail }) {
   const place = placeName(detail)
-  if (!place) return <>Home {detail.home_id}</>
+  if (!place) return <>Home ID {detail.home_id}</>
   return (
     <>
-      Your home on <span className="font-medium">{place}</span> · ID {detail.home_id}
+      Home: <span className="font-semibold">{place}</span> · ID {detail.home_id}
     </>
   )
 }
@@ -58,8 +58,10 @@ function RepairLine({ position }) {
   if (!position) return null
   const dots = Math.min(position, 15)
   return (
-    <div>
-      <Label>Your place in the repair line</Label>
+    <div className="flex flex-wrap items-center gap-3">
+      <p>
+        Your place in the repair line: <span className="font-medium text-gray-900">{position}</span>
+      </p>
       <div className="flex flex-wrap items-center gap-1" aria-hidden="true">
         {Array.from({ length: dots }, (_, i) => (
           <span
@@ -67,9 +69,7 @@ function RepairLine({ position }) {
             className={`inline-block h-2.5 w-2.5 rounded-full ${i === dots - 1 ? 'bg-accent-500' : 'bg-gray-200'}`}
           />
         ))}
-        <span className="ml-2 text-xs text-gray-500">you are #{position}</span>
       </div>
-      <p className="mt-1 text-xs text-gray-500">{position - 1} repairs are ahead of yours.</p>
     </div>
   )
 }
@@ -137,8 +137,8 @@ export default function AnswerCard({ detail }) {
     return (
       <div className="space-y-3 text-sm">
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-800">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-amber-600">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm text-amber-700">
               <HomeLabel detail={detail} />
             </p>
             <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-medium text-gray-600">
@@ -171,8 +171,8 @@ export default function AnswerCard({ detail }) {
   return (
     <div className="space-y-3 text-sm">
       <div className="rounded-xl border border-gray-200 bg-white p-5">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-gray-400">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm text-gray-600">
             <HomeLabel detail={detail} />
           </p>
           {band && (
@@ -222,7 +222,7 @@ export function ScenarioSummary({ detail }) {
   if (detail.fallback) {
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
-        <p className="text-xs text-amber-600">
+        <p className="text-sm text-amber-700">
           <HomeLabel detail={detail} />
         </p>
         <p className="mt-1 font-medium">{detail.fallback}</p>
@@ -233,8 +233,8 @@ export function ScenarioSummary({ detail }) {
   return (
     <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 text-sm text-gray-700">
       <div>
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-gray-400">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm text-gray-600">
             <HomeLabel detail={detail} />
           </p>
           {risk.band && (
