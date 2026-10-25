@@ -226,6 +226,11 @@ def main():
 
     print("3. Loading network chains...")
     all_chains = load_chains()
+    # real customers with NO power path in AEP's data: we can't predict them honestly,
+    # so they show the "we can't predict this reliably" fallback in the app
+    no_path = customers[~customers["home_id"].isin(all_chains.keys())]
+    homes = pd.concat([homes, no_path[~no_path["home_id"].isin(homes["home_id"])]])
+    print("  ", len(no_path), "customers have no power path (added as fallback examples)")
     chains = {h: all_chains[h] for h in homes["home_id"] if h in all_chains}
     homes["has_chain"] = homes["home_id"].isin(chains.keys())
     homes["chain_length"] = homes["home_id"].map(lambda h: len(chains.get(h, [])))

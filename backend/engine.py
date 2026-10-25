@@ -295,6 +295,13 @@ def compare_neighbors(home_id, neighbor_id, storm_gust_mph=REAL_STORM_GUST):
     p_me = home_probability(home_id, probs)[0]
     p_them = home_probability(neighbor_id, probs)[0]
 
+    if not mine or not theirs:
+        who = "your home" if not mine else "your neighbor's home"
+        return {"home": home_id, "neighbor": neighbor_id, "same_line": None,
+                "shared_equipment": 0, "my_probability": p_me, "neighbor_probability": p_them,
+                "explanation": f"We don't have details about the equipment that feeds {who}, "
+                               f"so we can't compare the two homes."}
+
     if not only_mine and not only_theirs:
         text = ("You and your neighbor get power through exactly the same equipment, "
                 "so you'll almost always lose and regain power together.")
