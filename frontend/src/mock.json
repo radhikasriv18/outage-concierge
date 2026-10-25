@@ -289,5 +289,71 @@
    "_score": 0.12,
    "_repair_hours": 4
   }
- ]
+ ],
+ "rules": {
+  "alert_rules": [
+   "High risk: text 12 hours before the storm",
+   "Medium risk + medical device, life support or elderly resident: text 12 hours before",
+   "Medium risk, everyone else: text 6 hours before",
+   "Life support: phone call + text 24 hours before",
+   "Low risk: no alert (avoids alert fatigue)"
+  ],
+  "escalation_rules": [
+   "Life support + Medium or High risk: add to AEP's welfare-check list before the storm",
+   "Medical device or elderly resident + outage could last over 24 hours: call to check on them",
+   "High risk but 'Not sure': a person at AEP reviews the prediction",
+   "Restoration estimate slips by more than 4 hours: notify a supervisor"
+  ],
+  "risk_bands": {
+   "High": "30% or more",
+   "Medium": "10%-30%",
+   "Low": "under 10%"
+  }
+ },
+ "weather": {
+  "storm": "Feb 2025, Roanoke VA",
+  "source": "Open-Meteo historical archive",
+  "max_gust_mph": 55.3,
+  "max_gust_time": "2025-02-16T15:00",
+  "max_wind_mph": 24,
+  "total_rain_in": 2.73,
+  "average_gust_across_area_mph": 55.8,
+  "slider_default_mph": 55.8
+ },
+ "backtest": {
+  "method": "Leave one storm out: trained on two real storms, tested on the third",
+  "chosen_model": "logistic_regression",
+  "average_roc_auc": 0.619,
+  "average_top10_lift": 1.897,
+  "per_storm": [
+   {
+    "model": "logistic_regression",
+    "test_storm": "feb2025",
+    "damaged_share": 0.042,
+    "roc_auc": 0.638,
+    "avg_precision": 0.068,
+    "brier": 0.0412,
+    "lift_top10": 1.89
+   },
+   {
+    "model": "logistic_regression",
+    "test_storm": "sep2024",
+    "damaged_share": 0.0069,
+    "roc_auc": 0.577,
+    "avg_precision": 0.009,
+    "brier": 0.0073,
+    "lift_top10": 1.42
+   },
+   {
+    "model": "logistic_regression",
+    "test_storm": "jan2025",
+    "damaged_share": 0.0025,
+    "roc_auc": 0.642,
+    "avg_precision": 0.02,
+    "brier": 0.0025,
+    "lift_top10": 2.38
+   }
+  ],
+  "summary": "On storms it had never seen, the equipment our model flagged as riskiest (top 10%) had about 1.9 times the average damage."
+ }
 }
