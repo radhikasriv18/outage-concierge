@@ -8,6 +8,7 @@ Part 4: band, confidence, reasons in plain words
 """
 from pathlib import Path
 import json
+import threading
 
 import numpy as np
 import pandas as pd
@@ -202,30 +203,35 @@ def _one_storm(p_dev, crews, rng):
 
 
 _sim_cache = {}
+_sim_lock = threading.Lock()   # requests that arrive together wait for one simulation, not run their own
+_rows = np.arange(len(_home_ids))
 
 
 def simulate(storm_gust_mph=REAL_STORM_GUST, crews=DEFAULT_CREWS):
     """Run many random storms. Returns per-home restoration hours (NaN = power stayed on)."""
     key = (round(storm_gust_mph, 1), crews)
-    if key in _sim_cache:
-        return _sim_cache[key]
-    probs = device_probabilities(storm_gust_mph)
-    p_dev = probs.reindex(_dev_ids).to_numpy()
-    rng = np.random.default_rng(0)                     # same answer every time for the same inputs
-    back = np.full((RUNS, len(_home_ids)), np.nan)
-    queue = np.full((RUNS, len(_home_ids)), np.nan)
-    for r in range(RUNS):
-        finish, home_back, queue_pos = _one_storm(p_dev, crews, rng)
-        out = home_back > 0
-        back[r, out] = home_back[out]
-        if queue_pos:
-            # the home's place in line = position of the last job its power waits for
-            for h in np.flatnonzero(out):
-                devs = PATHS[h][PATHS[h] >= 0]
-                last = devs[np.argmax(finish[devs])]
-                queue[r, h] = queue_pos[last]
-    _sim_cache[key] = (back, queue)
-    return back, queue
+    with _sim_lock:
+        if key in _sim_cache:
+            return _sim_cache[key]
+        probs = device_probabilities(storm_gust_mph)
+        p_dev = probs.reindex(_dev_ids).to_numpy()
+        rng = np.random.default_rng(0)                     # same answer every time for the same inputs
+        back = np.full((RUNS, len(_home_ids)), np.nan)
+        queue = np.full((RUNS, len(_home_ids)), np.nan)
+        for r in range(RUNS):
+            finish, home_back, queue_pos = _one_storm(p_dev, crews, rng)
+            out = home_back > 0
+            back[r, out] = home_back[out]
+            if queue_pos:
+                # the home's place in line = position of the last job its power waits for
+                # (all homes at once: the step on each path that is fixed last)
+                path_finish = np.where(PATHS >= 0, finish[PATHS], -1.0)
+                last = PATHS[_rows, path_finish.argmax(axis=1)]
+                pos = np.zeros(len(p_dev))
+                pos[list(queue_pos)] = list(queue_pos.values())
+                queue[r, out] = pos[last[out]]
+        _sim_cache[key] = (back, queue)
+        return back, queue
 
 
 def restoration(home_id, storm_gust_mph=REAL_STORM_GUST, crews=DEFAULT_CREWS):
