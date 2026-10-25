@@ -354,6 +354,148 @@
     "lift_top10": 2.38
    }
   ],
-  "summary": "On storms it had never seen, the equipment our model flagged as riskiest (top 10%) had about 1.9 times the average damage."
+  "summary": "On storms it had never seen, the equipment our model flagged as riskiest (top 10%) had about 1.9 times the average damage.",
+  "home_level": [
+   {
+    "test_storm": "feb2025",
+    "homes": 5190,
+    "average_predicted": 0.066,
+    "actual_share": 0.161,
+    "home_roc_auc": 0.44,
+    "independent_causes": 20,
+    "by_band": [
+     {
+      "band": "Low",
+      "homes": 4653,
+      "predicted": 0.06,
+      "actual": 0.161
+     },
+     {
+      "band": "Medium",
+      "homes": 537,
+      "predicted": 0.121,
+      "actual": 0.164
+     }
+    ]
+   },
+   {
+    "test_storm": "sep2024",
+    "homes": 5190,
+    "average_predicted": 0.139,
+    "actual_share": 0.276,
+    "home_roc_auc": 0.26,
+    "independent_causes": 7,
+    "by_band": [
+     {
+      "band": "Low",
+      "homes": 1647,
+      "predicted": 0.071,
+      "actual": 0.491
+     },
+     {
+      "band": "Medium",
+      "homes": 3542,
+      "predicted": 0.171,
+      "actual": 0.176
+     },
+     {
+      "band": "High",
+      "homes": 1,
+      "predicted": 0.3,
+      "actual": 0
+     }
+    ]
+   },
+   {
+    "test_storm": "jan2025",
+    "homes": 5190,
+    "average_predicted": 0.009,
+    "actual_share": 0.086,
+    "home_roc_auc": 0.647,
+    "independent_causes": 6,
+    "by_band": [
+     {
+      "band": "Low",
+      "homes": 5190,
+      "predicted": 0.009,
+      "actual": 0.086
+     }
+    ]
+   }
+  ],
+  "home_level_note": "Homes share upstream equipment, so one damaged safety switch can affect over a thousand homes. In our area each storm had only a handful of independent causes, too few to judge home-level accuracy. The equipment-level test above is the meaningful one.",
+  "restoration": {
+   "storm": "feb2025",
+   "real_repairs": 1209,
+   "real_done_same_or_next_day": 0.717,
+   "current_default_crews": 2,
+   "current_within_48h": 0.801,
+   "calibrated_crews": 2,
+   "calibrated_within_48h": 0.801,
+   "sweep": [
+    {
+     "crews": 1,
+     "within_24h": 0.26,
+     "within_48h": 0.496,
+     "median_hours": 48.6
+    },
+    {
+     "crews": 2,
+     "within_24h": 0.47,
+     "within_48h": 0.801,
+     "median_hours": 25.7
+    },
+    {
+     "crews": 3,
+     "within_24h": 0.634,
+     "within_48h": 0.959,
+     "median_hours": 18.2
+    },
+    {
+     "crews": 4,
+     "within_24h": 0.76,
+     "within_48h": 0.995,
+     "median_hours": 14.4
+    },
+    {
+     "crews": 5,
+     "within_24h": 0.86,
+     "within_48h": 1,
+     "median_hours": 12.1
+    },
+    {
+     "crews": 6,
+     "within_24h": 0.92,
+     "within_48h": 1,
+     "median_hours": 10.6
+    },
+    {
+     "crews": 7,
+     "within_24h": 0.956,
+     "within_48h": 1,
+     "median_hours": 9.5
+    },
+    {
+     "crews": 8,
+     "within_24h": 0.974,
+     "within_48h": 1,
+     "median_hours": 8.7
+    },
+    {
+     "crews": 9,
+     "within_24h": 0.987,
+     "within_48h": 1,
+     "median_hours": 8
+    },
+    {
+     "crews": 10,
+     "within_24h": 0.992,
+     "within_48h": 1,
+     "median_hours": 7.6
+    }
+   ],
+   "note": "AEP's records only have dates, not times, so this is a day-level check. Calibrated crews = the crew count whose simulated repairs best match AEP's real Feb 2025 completion rate in this area."
+  },
+  "restoration_summary": "In the real Feb 2025 storm, 72% of repairs were done the same or next day. We set the default crew count to match that."
  }
 }
