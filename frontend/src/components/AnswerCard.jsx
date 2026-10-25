@@ -165,21 +165,34 @@ export default function AnswerCard({ detail, params }) {
   const [which, setWhich] = useState('power')
   const band = detail.risk?.band
 
-  // The backend sends only { home_id, fallback, actions } when it can't predict a home.
+  // Fallback homes come without risk, restoration, or alert (see API.md).
   if (detail.fallback) {
     return (
       <div className="space-y-3 text-sm">
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-800">
-          <p className="text-xs text-amber-600">Home {detail.home_id}</p>
-          <p className="mt-1 font-medium">We are not sure about this one.</p>
-          <p>{detail.fallback}</p>
-        </div>
-        {detail.actions?.length > 0 && (
-          <div className="rounded-xl border border-gray-200 bg-white p-5 text-gray-700">
-            <Label>What you can still do</Label>
-            <List items={detail.actions} />
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-amber-600">Home {detail.home_id}</p>
+            <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-medium text-gray-600">No prediction</span>
           </div>
-        )}
+          <p className="mt-2 text-xl font-semibold text-amber-900">
+            {detail.headline || 'We are not sure about this one.'}
+          </p>
+          <p className="mt-1">{detail.fallback}</p>
+        </div>
+        <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 text-gray-700">
+          {detail.facts?.length > 0 && (
+            <div>
+              <Label>Confirmed</Label>
+              <List items={detail.facts} />
+            </div>
+          )}
+          {detail.actions?.length > 0 && (
+            <div>
+              <Label>What you can still do</Label>
+              <List items={detail.actions} />
+            </div>
+          )}
+        </div>
       </div>
     )
   }
