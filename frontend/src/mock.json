@@ -1,0 +1,293 @@
+{
+ "_note": "FAKE DATA for building the UI before the backend is ready. Fields starting with _ are mock-only.",
+ "substation": [
+  37.271,
+  -79.9414
+ ],
+ "line_taps": {
+  "A": [
+   37.2795,
+   -79.952
+  ],
+  "B": [
+   37.265,
+   -79.93
+  ],
+  "C": [
+   37.28,
+   -79.928
+  ]
+ },
+ "homes": [
+  {
+   "home_id": "006712043",
+   "lat": 37.2799,
+   "lon": -79.9528,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.72,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "652390956",
+   "lat": 37.2819,
+   "lon": -79.9552,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.8,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "698069869",
+   "lat": 37.2839,
+   "lon": -79.9576,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.88,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "043748782",
+   "lat": 37.2839,
+   "lon": -79.958,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.72,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "789427695",
+   "lat": 37.2859,
+   "lon": -79.9604,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.8,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "835106608",
+   "lat": 37.2859,
+   "lon": -79.9608,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.88,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "080785521",
+   "lat": 37.2879,
+   "lon": -79.9632,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.72,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "926464434",
+   "lat": 37.2899,
+   "lon": -79.9656,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.8,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "972143347",
+   "lat": 37.2899,
+   "lon": -79.966,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.88,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "017822260",
+   "lat": 37.2919,
+   "lon": -79.9684,
+   "risk_band": "High",
+   "_line": "A",
+   "_score": 0.72,
+   "_repair_hours": 9
+  },
+  {
+   "home_id": "063501173",
+   "lat": 37.2631,
+   "lon": -79.9277,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.42,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "109180086",
+   "lat": 37.2628,
+   "lon": -79.927,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.5,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "054858999",
+   "lat": 37.2625,
+   "lon": -79.9263,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.58,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "200537912",
+   "lat": 37.2602,
+   "lon": -79.9236,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.42,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "246216825",
+   "lat": 37.2599,
+   "lon": -79.9229,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.5,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "091895738",
+   "lat": 37.2576,
+   "lon": -79.9202,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.58,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "337574651",
+   "lat": 37.2573,
+   "lon": -79.9195,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.42,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "383253564",
+   "lat": 37.257,
+   "lon": -79.9188,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.5,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "028932477",
+   "lat": 37.2547,
+   "lon": -79.9161,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.58,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "474611390",
+   "lat": 37.2544,
+   "lon": -79.9154,
+   "risk_band": "Medium",
+   "_line": "B",
+   "_score": 0.42,
+   "_repair_hours": 6
+  },
+  {
+   "home_id": "520290303",
+   "lat": 37.2805,
+   "lon": -79.9262,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.12,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "065969216",
+   "lat": 37.2826,
+   "lon": -79.926,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.2,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "611648129",
+   "lat": 37.2847,
+   "lon": -79.9258,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.28,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "657327042",
+   "lat": 37.2848,
+   "lon": -79.9236,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.12,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "003005955",
+   "lat": 37.2869,
+   "lon": -79.9234,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.2,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "748684868",
+   "lat": 37.287,
+   "lon": -79.9212,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.28,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "794363781",
+   "lat": 37.2891,
+   "lon": -79.921,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.12,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "040042694",
+   "lat": 37.2912,
+   "lon": -79.9208,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.2,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "885721607",
+   "lat": 37.2913,
+   "lon": -79.9186,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.28,
+   "_repair_hours": 4
+  },
+  {
+   "home_id": "931400520",
+   "lat": 37.2934,
+   "lon": -79.9184,
+   "risk_band": "Low",
+   "_line": "C",
+   "_score": 0.12,
+   "_repair_hours": 4
+  }
+ ]
+}
