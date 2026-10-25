@@ -268,6 +268,67 @@ def what_changes_it(home_id, storm_gust_mph=REAL_STORM_GUST, crews=DEFAULT_CREWS
     return out
 
 
+# ------------------------------------------------------------------ PART 6: neighbor comparison
+def nearest_neighbor(home_id, different_path=True):
+    """The closest demo home, by default one whose power path is different."""
+    me = HOMES.loc[home_id]
+    d = (HOMES["lat"] - me["lat"]) ** 2 + (HOMES["lon"] - me["lon"]) ** 2
+    my_path = [s["location"] for s in CHAINS.get(home_id, [])]
+    for other in d.sort_values().index:
+        if other == home_id:
+            continue
+        other_path = [s["location"] for s in CHAINS.get(other, [])]
+        if not different_path or other_path != my_path:
+            return other
+    return None
+
+
+def compare_neighbors(home_id, neighbor_id, storm_gust_mph=REAL_STORM_GUST):
+    """Why one home might lose power while the neighbor keeps it."""
+    probs = device_probabilities(storm_gust_mph)
+    mine = {s["location"]: s["kind"] for s in CHAINS.get(home_id, [])}
+    theirs = {s["location"]: s["kind"] for s in CHAINS.get(neighbor_id, [])}
+    shared = [loc for loc in mine if loc in theirs]
+    only_mine = [loc for loc in mine if loc not in theirs and loc in probs.index]
+    only_theirs = [loc for loc in theirs if loc not in mine and loc in probs.index]
+
+    p_me = home_probability(home_id, probs)[0]
+    p_them = home_probability(neighbor_id, probs)[0]
+
+    if not only_mine and not only_theirs:
+        text = ("You and your neighbor get power through exactly the same equipment, "
+                "so you'll almost always lose and regain power together.")
+    else:
+        parts = []
+        if only_mine:
+            weakest = max(only_mine, key=lambda l: probs[l])
+            kind = mine[weakest]
+            short = ("transformers" if kind == "Distribution" else
+                     "safety fuses" if kind.startswith("Fuse") else
+                     "safety switches" if kind.startswith("Recloser") else "pieces of equipment")
+            parts.append(f"You and your neighbor are on different {short}")
+        if shared:
+            parts.append(f"you share the bigger equipment upstream ({len(shared)} pieces)")
+        text = ", and ".join(parts) + ". "
+        if p_me is not None and p_them is not None:
+            if p_me > p_them + 0.02:
+                text += "Your branch has the weaker equipment, which is why your risk is higher than theirs."
+            elif p_them > p_me + 0.02:
+                text += "Their branch has the weaker equipment, so they're more likely to lose power than you."
+            else:
+                text += "Your chances are about the same."
+        text += (" If only one of you loses power, the problem is on that home's own branch, "
+                 "not the shared line.")
+    return {
+        "home": home_id, "neighbor": neighbor_id,
+        "same_line": not only_mine and not only_theirs,
+        "shared_equipment": len(shared),
+        "my_probability": None if p_me is None else round(p_me, 3),
+        "neighbor_probability": None if p_them is None else round(p_them, 3),
+        "explanation": text,
+    }
+
+
 if __name__ == "__main__":
     print("Real Feb 2025 storm, average gust:", REAL_STORM_GUST, "mph\n")
     for gust in [30, 45, REAL_STORM_GUST, 70]:
