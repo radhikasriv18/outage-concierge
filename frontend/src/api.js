@@ -1,7 +1,7 @@
 import mock from './mock.json'
 
-// Set VITE_USE_MOCK=false in .env.local once the backend is running.
-export const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false'
+// Talks to the real backend by default. Set VITE_USE_MOCK=true in .env.local to use mock.json instead.
+export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 async function request(path, options) {
