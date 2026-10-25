@@ -91,8 +91,17 @@ def build_answer(home_id, storm_gust_mph=engine.REAL_STORM_GUST, crews=engine.DE
         return None                     # unknown home -> the API returns 404
     home = engine.HOMES.loc[home_id]
     if a["fallback"]:
-        return {"home_id": home_id, "fallback": a["fallback"],
-                "actions": ["SAFETY: Stay far away from fallen power lines and report them to AEP"]}
+        return {"home_id": home_id,
+                "headline": "We can't give a reliable prediction for your home right now.",
+                "fallback": a["fallback"],
+                "facts": [f"Storm scenario: wind gusts of about {round(storm_gust_mph)} mph in your area"],
+                "estimates": [],
+                "actions": ["Charge your phone and a backup battery now",
+                            "Keep a flashlight handy (avoid candles)",
+                            "SAFETY: Stay far away from fallen power lines, even if they look dead, "
+                            "and report them to AEP"],
+                "power_path": power_path_coords(home_id),
+                "profile_is_synthetic": True}
 
     restore = engine.restoration(home_id, storm_gust_mph, crews)
     alert = engine.alert_plan(home_id, a, restore)
