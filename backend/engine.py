@@ -137,6 +137,137 @@ def assess_all(storm_gust_mph=REAL_STORM_GUST):
     return pd.DataFrame(rows)
 
 
+# ------------------------------------------------------------------ PART 5: restoration simulation
+LABOR = json.loads((CACHE / "labor.json").read_text())
+# the real mix of damage types in AEP's records (all 1,659 damage records)
+DAMAGE_MIX = {"primary": 704, "Pole": 355, "Fuse Bank": 280, "secondary": 156,
+              "Transformer": 74, "Recloser Bank": 58, "Switch": 19, "default": 13}
+_mix_kinds = list(DAMAGE_MIX)
+_mix_p = np.array(list(DAMAGE_MIX.values()), dtype=float) / sum(DAMAGE_MIX.values())
+_mix_hours = np.array([LABOR["hours_by_asset"][k] for k in _mix_kinds])
+
+DEFAULT_CREWS = 10        # ASSUMPTION: crews assigned to this area (confirm with AEP)
+# ASSUMPTION (confirm with AEP): the Excel hours are PERSON-hours and a crew has 3 people.
+# Evidence: half of AEP's real repairs finished the same day, which only fits if a
+# 23-hour pole job (5.2 h x 4.5) is shared by a crew. Set CREW_SIZE = 1 if they're crew-hours.
+CREW_SIZE = 3
+START_DELAY_HOURS = 2     # ASSUMPTION: time to assess damage before repairs start
+RUNS = 300                # how many random storms we simulate
+
+# power paths as a table: one row per home, one column per step (-1 = no step)
+_home_ids = list(HOMES.index)
+_dev_ids = sorted({s["location"] for h in _home_ids for s in CHAINS.get(h, [])
+                   if s["location"] in DEVICES.index})
+_dev_index = {d: i for i, d in enumerate(_dev_ids)}
+_max_len = max(len(CHAINS.get(h, [])) for h in _home_ids)
+PATHS = np.full((len(_home_ids), _max_len), -1)
+for r, h in enumerate(_home_ids):
+    idx = [_dev_index[s["location"]] for s in CHAINS.get(h, []) if s["location"] in _dev_index]
+    PATHS[r, :len(idx)] = idx
+# homes each device feeds (inside the demo area), and life-support homes it feeds
+_feeds = np.zeros(len(_dev_ids))
+_feeds_life = np.zeros(len(_dev_ids))
+_life = HOMES["life_support"].astype(bool).to_numpy()
+for r in range(len(_home_ids)):
+    for d in PATHS[r][PATHS[r] >= 0]:
+        _feeds[d] += 1
+        _feeds_life[d] += _life[r]
+
+
+def _one_storm(p_dev, crews, rng):
+    """One random storm: which devices fail, the repair order, and when each home is back."""
+    failed = np.flatnonzero(rng.random(len(p_dev)) < p_dev)
+    finish = np.zeros(len(p_dev))                      # 0 = not damaged
+    if len(failed) == 0:
+        return finish, np.zeros(len(_home_ids)), {}
+    # size of each job: a damage type drawn from AEP's real mix, x 4.5 for travel/setup,
+    # with +-30% random variation
+    kinds = rng.choice(len(_mix_kinds), size=len(failed), p=_mix_p)
+    hours = (_mix_hours[kinds] * LABOR["indirect_multiplier"] / CREW_SIZE
+             * rng.lognormal(0, 0.3, len(failed)))
+    # priority: life-support homes first, then the most homes restored per hour of work
+    priority = _feeds_life[failed] * 1000 + _feeds[failed] / hours
+    order = np.argsort(-priority)
+    crew_free = np.full(crews, float(START_DELAY_HOURS))  # when each crew is next available
+    queue_pos = {}
+    for pos, j in enumerate(order, start=1):
+        c = np.argmin(crew_free)                       # the next free crew takes the job
+        crew_free[c] += hours[j]
+        finish[failed[j]] = crew_free[c]
+        queue_pos[failed[j]] = pos
+    # a home is back when the LAST broken device on its path is fixed
+    padded = np.append(finish, 0)                      # index -1 -> 0
+    home_back = padded[PATHS].max(axis=1)
+    return finish, home_back, queue_pos
+
+
+_sim_cache = {}
+
+
+def simulate(storm_gust_mph=REAL_STORM_GUST, crews=DEFAULT_CREWS):
+    """Run many random storms. Returns per-home restoration hours (NaN = power stayed on)."""
+    key = (round(storm_gust_mph, 1), crews)
+    if key in _sim_cache:
+        return _sim_cache[key]
+    probs = device_probabilities(storm_gust_mph)
+    p_dev = probs.reindex(_dev_ids).to_numpy()
+    rng = np.random.default_rng(0)                     # same answer every time for the same inputs
+    back = np.full((RUNS, len(_home_ids)), np.nan)
+    queue = np.full((RUNS, len(_home_ids)), np.nan)
+    for r in range(RUNS):
+        finish, home_back, queue_pos = _one_storm(p_dev, crews, rng)
+        out = home_back > 0
+        back[r, out] = home_back[out]
+        if queue_pos:
+            # the home's place in line = position of the last job its power waits for
+            for h in np.flatnonzero(out):
+                devs = PATHS[h][PATHS[h] >= 0]
+                last = devs[np.argmax(finish[devs])]
+                queue[r, h] = queue_pos[last]
+    _sim_cache[key] = (back, queue)
+    return back, queue
+
+
+def restoration(home_id, storm_gust_mph=REAL_STORM_GUST, crews=DEFAULT_CREWS):
+    """If this home loses power: likely hours until it's back, and its place in line."""
+    back, queue = simulate(storm_gust_mph, crews)
+    h = _home_ids.index(home_id)
+    hours = back[:, h][~np.isnan(back[:, h])]
+    if len(hours) < 10:          # it almost never loses power in the simulations
+        return {"outage_runs": int(len(hours)), "min_hours": None, "max_hours": None,
+                "typical_hours": None, "queue_position": None}
+    q = queue[:, h][~np.isnan(queue[:, h])]
+    return {
+        "outage_runs": int(len(hours)),
+        "min_hours": round(float(np.percentile(hours, 10)), 1),     # 10th percentile
+        "typical_hours": round(float(np.median(hours)), 1),
+        "max_hours": round(float(np.percentile(hours, 90)), 1),     # 90th percentile
+        "queue_position": int(np.median(q)),
+    }
+
+
+def what_changes_it(home_id, storm_gust_mph=REAL_STORM_GUST, crews=DEFAULT_CREWS):
+    """Re-run with one thing changed, so customers see what moves their estimate."""
+    out = []
+    now = restoration(home_id, storm_gust_mph, crews)
+    more = restoration(home_id, storm_gust_mph, crews + 5)
+    if now["max_hours"] and more["max_hours"]:
+        if now["max_hours"] - more["max_hours"] >= 1:
+            out.append(f"If 5 more crews arrive: about {round(more['min_hours'])} to "
+                       f"{round(more['max_hours'])} hours")
+        else:
+            out.append("Your repair is near the front of the line, so more crews "
+                       "wouldn't change your time much")
+    # wind changes the CHANCE of losing power (time estimates get unreliable when
+    # outages become rare, so we don't compare those)
+    a_now = assess_home(home_id, storm_gust_mph)
+    a_weak = assess_home(home_id, storm_gust_mph - 10)
+    if a_now["probability"] is not None:
+        out.append(f"If winds are 10 mph weaker: your chance of losing power drops from "
+                   f"{a_now['probability']:.0%} to {a_weak['probability']:.0%}")
+    return out
+
+
 if __name__ == "__main__":
     print("Real Feb 2025 storm, average gust:", REAL_STORM_GUST, "mph\n")
     for gust in [30, 45, REAL_STORM_GUST, 70]:
@@ -146,4 +277,12 @@ if __name__ == "__main__":
     print()
     example = "606712043"
     r = assess_home(example)
-    print(json.dumps(r, indent=2))
+    print(json.dumps({k: r[k] for k in ["probability", "band", "confidence"]}))
+
+    import time
+    t0 = time.time()
+    print("\nRestoration (if the power goes out):", restoration(example))
+    print(f"(simulated {RUNS} storms in {time.time() - t0:.1f} s)")
+    print("What changes it:", what_changes_it(example))
+    for crews in [5, 10, 20]:
+        print(f"{crews:>3} crews ->", restoration(example, crews=crews))
